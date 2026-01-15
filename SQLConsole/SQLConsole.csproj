@@ -30,7 +30,6 @@
 
   <ItemGroup>
     <None Remove="TSQL-Mode.xshd" />
-    <EmbeddedResource Include="TSQL-Mode.xshd" />
   </ItemGroup>
 
   <ItemGroup>
@@ -48,6 +47,10 @@
     <Resource Include="Resources\Redo.ico" />
     <None Remove="Resources\Undo.ico" />
     <Resource Include="Resources\Undo.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Highlighting\TSQL-Mode.xshd" />
   </ItemGroup>
 
 </Project>

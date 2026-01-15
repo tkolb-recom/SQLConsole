@@ -1,6 +1,4 @@
-﻿using System.Windows;
-using System.Windows.Controls.Ribbon;
-using ICSharpCode.AvalonEdit.Highlighting;
+﻿using System.Windows.Controls.Ribbon;
 
 namespace Recom.SQLConsole.UI;
 
@@ -11,8 +9,6 @@ public partial class MainWindow : RibbonWindow
 {
     public MainWindow()
     {
-        IHighlightingDefinition? sql = HighlightingManager.Instance.GetDefinition("SQL");
-
         this.InitializeComponent();
     }
 }
