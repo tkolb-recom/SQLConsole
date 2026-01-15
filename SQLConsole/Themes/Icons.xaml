@@ -1,0 +1,14 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+	<BitmapImage x:Key="ImageOpenFile" UriSource="/SQLConsole;component/Resources/OpenFile.ico" />
+
+	<BitmapImage x:Key="ImageCopy" UriSource="/SQLConsole;component/Resources/Copy.ico" />
+	<BitmapImage x:Key="ImageCut" UriSource="/SQLConsole;component/Resources/Cut.ico" />
+	<BitmapImage x:Key="ImagePaste" UriSource="/SQLConsole;component/Resources/Paste.ico" />
+
+	<BitmapImage x:Key="ImageDelete" UriSource="/SQLConsole;component/Resources/Delete.ico" />
+
+	<BitmapImage x:Key="ImageUndo" UriSource="/SQLConsole;component/Resources/Undo.ico" />
+	<BitmapImage x:Key="ImageRedo" UriSource="/SQLConsole;component/Resources/Redo.ico" />
+
+</ResourceDictionary>

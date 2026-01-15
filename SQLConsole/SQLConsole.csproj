@@ -2,10 +2,52 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net10.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <RootNamespace>Recom.SQLConsole</RootNamespace>
+    <LangVersion>latestmajor</LangVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AvalonEdit" Version="6.3.1.120" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Database\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="UI\MainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <XamlRuntime>Wpf</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="TSQL-Mode.xshd" />
+    <EmbeddedResource Include="TSQL-Mode.xshd" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\Copy.ico" />
+    <Resource Include="Resources\Copy.ico" />
+    <None Remove="Resources\Cut.ico" />
+    <Resource Include="Resources\Cut.ico" />
+    <None Remove="Resources\Delete.ico" />
+    <Resource Include="Resources\Delete.ico" />
+    <None Remove="Resources\OpenFile.ico" />
+    <Resource Include="Resources\OpenFile.ico" />
+    <None Remove="Resources\Paste.ico" />
+    <Resource Include="Resources\Paste.ico" />
+    <None Remove="Resources\Redo.ico" />
+    <Resource Include="Resources\Redo.ico" />
+    <None Remove="Resources\Undo.ico" />
+    <Resource Include="Resources\Undo.ico" />
+  </ItemGroup>
 
 </Project>
