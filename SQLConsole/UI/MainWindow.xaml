@@ -20,54 +20,59 @@
     <DockPanel>
         <Ribbon DockPanel.Dock="Top">
             <Ribbon.HelpPaneContent>
-                <RibbonButton SmallImageSource="{StaticResource ImageDelete}" />
+                <RibbonButton SmallImageSource="{StaticResource ImageHelpSmall}" />
             </Ribbon.HelpPaneContent>
 
             <Ribbon.QuickAccessToolBar>
                 <RibbonQuickAccessToolBar>
-                    <RibbonButton ToolTip="Speichern" SmallImageSource="{StaticResource ImageOpenFile}" />
-                    <RibbonButton ToolTip="Öffnen" SmallImageSource="{StaticResource ImageOpenFile}" />
-                    <RibbonButton ToolTip="Undo" SmallImageSource="{StaticResource ImageUndo}" />
-                    <RibbonButton ToolTip="Redo" SmallImageSource="{StaticResource ImageRedo}" />
+                    <RibbonButton ToolTip="Neu" SmallImageSource="{StaticResource ImageNewFileSmall}" />
+                    <RibbonButton ToolTip="Speichern" SmallImageSource="{StaticResource ImageSaveFileSmall}" />
+                    <RibbonButton ToolTip="Öffnen" SmallImageSource="{StaticResource ImageOpenFileSmall}" />
+                    <RibbonButton ToolTip="Undo" SmallImageSource="{StaticResource ImageUndoSmall}" />
+                    <RibbonButton ToolTip="Redo" SmallImageSource="{StaticResource ImageRedoSmall}" />
                 </RibbonQuickAccessToolBar>
             </Ribbon.QuickAccessToolBar>
 
             <Ribbon.ApplicationMenu>
-                <RibbonApplicationMenu>
-                    <RibbonApplicationMenuItem Header="Neu" />
+                <RibbonApplicationMenu SmallImageSource="{StaticResource ImageMenuSmall}">
+                    <RibbonApplicationMenuItem Header="Neu" ImageSource="{StaticResource ImageNewFile}"/>
                     <RibbonApplicationMenuItem Header="Öffnen" ImageSource="{StaticResource ImageOpenFile}" />
-                    <RibbonApplicationMenuItem Header="Speichern" ImageSource="{StaticResource ImageOpenFile}" />
+                    <RibbonApplicationMenuItem Header="Speichern" ImageSource="{StaticResource ImageSaveFile}" />
+                    <RibbonApplicationMenuItem Header="Speichern als" ImageSource="{StaticResource ImageSaveAs}" />
                     <RibbonApplicationMenu.FooterPaneContent>
-                        <RibbonButton Label="Beenden" />
+                        <RibbonButton Label="Beenden" SmallImageSource="{StaticResource ImageExitSmall}" />
                     </RibbonApplicationMenu.FooterPaneContent>
                 </RibbonApplicationMenu>
             </Ribbon.ApplicationMenu>
 
             <RibbonTab Header="Start">
                 <RibbonGroup Header="Bearbeiten">
-                    <RibbonButton Label="Kopieren" SmallImageSource="{StaticResource ImageCopy}" />
-                    <RibbonButton Label="Einfügen" SmallImageSource="{StaticResource ImagePaste}" />
+                    <RibbonButton Label="Kopieren" SmallImageSource="{StaticResource ImageCopySmall}" />
+                    <RibbonButton Label="Einfügen" SmallImageSource="{StaticResource ImagePasteSmall}" />
+                    <RibbonButton Label="Ausschneiden" SmallImageSource="{StaticResource ImageCutSmall}" />
                 </RibbonGroup>
                 <RibbonGroup Header="Schrift">
-                    <RibbonComboBox ToolTip="Schriftart" />
-                    <RibbonComboBox ToolTip="Schriftgröße" />
-                    <RibbonButton ToolTip="Schriftgrad vergrößern" SmallImageSource="{StaticResource ImageCut}" />
-                    <RibbonButton ToolTip="Schriftgrad verkleinern" SmallImageSource="{StaticResource ImageCut}" />
+                    <RibbonButton Label="Schrift einstellen" LargeImageSource="{StaticResource ImageFontEdit}" />
+                    <RibbonComboBox ToolTip="Schriftart" SmallImageSource="{StaticResource ImageFontSelect}"/>
+                    <RibbonComboBox ToolTip="Schriftgröße" SmallImageSource="{StaticResource ImageFontSize}"/>
+                    <StackPanel Orientation="Horizontal">
+                        <RibbonButton ToolTip="Schriftgrad vergrößern" SmallImageSource="{StaticResource ImageFontLarger}"/>
+                        <RibbonButton ToolTip="Schriftgrad verkleinern" SmallImageSource="{StaticResource ImageFontSmaller}" />
+                    </StackPanel>
                 </RibbonGroup>
             </RibbonTab>
 
             <RibbonTab Header="Datenbank">
                 <RibbonGroup Header="Verbindung">
                     <RibbonComboBox ToolTip="Datenbank" />
-                    <RibbonControlGroup></RibbonControlGroup>
-                    <RibbonButton ToolTip="Verbinden"
-                                  SmallImageSource="{StaticResource ImageOpenFile}" />
-                    <RibbonButton ToolTip="Trennen"
-                                  SmallImageSource="{StaticResource ImageOpenFile}" />
+                    <RibbonButton Label="Verbinden"
+                                  LargeImageSource="{StaticResource ImageConnect}" />
+                    <RibbonButton Label="Trennen"
+                                  LargeImageSource="{StaticResource ImageDisconnect}" />
                 </RibbonGroup>
                 <RibbonGroup Header="Ausführung">
                     <RibbonButton Label="Skript ausführen"
-                                  LargeImageSource="{StaticResource ImageOpenFile}" />
+                                  LargeImageSource="{StaticResource ImageRun}" />
                     <RibbonCheckBox x:Name="Transaction"
                                     Label="Transaktion starten"
                                     IsChecked="True" />
@@ -79,9 +84,9 @@
             <RibbonTab Header="Ansicht">
                 <RibbonGroup Header="Theme">
                     <RibbonButton Label="Hell"
-                                  LargeImageSource="{StaticResource ImageOpenFile}" />
+                                  LargeImageSource="{StaticResource ImageLightTheme}" />
                     <RibbonButton Label="Dunkel"
-                                  LargeImageSource="{StaticResource ImageOpenFile}" />
+                                  LargeImageSource="{StaticResource ImageDarkTheme}" />
                 </RibbonGroup>
             </RibbonTab>
         </Ribbon>

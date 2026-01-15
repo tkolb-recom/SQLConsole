@@ -29,28 +29,138 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="TSQL-Mode.xshd" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Resources\Copy.ico" />
-    <Resource Include="Resources\Copy.ico" />
-    <None Remove="Resources\Cut.ico" />
-    <Resource Include="Resources\Cut.ico" />
-    <None Remove="Resources\Delete.ico" />
-    <Resource Include="Resources\Delete.ico" />
-    <None Remove="Resources\OpenFile.ico" />
-    <Resource Include="Resources\OpenFile.ico" />
-    <None Remove="Resources\Paste.ico" />
-    <Resource Include="Resources\Paste.ico" />
-    <None Remove="Resources\Redo.ico" />
-    <Resource Include="Resources\Redo.ico" />
-    <None Remove="Resources\Undo.ico" />
-    <Resource Include="Resources\Undo.ico" />
-  </ItemGroup>
-
-  <ItemGroup>
     <EmbeddedResource Include="Highlighting\TSQL-Mode.xshd" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\icons8-ausgang-64.png" />
+    <None Remove="Resources\icons8-ausschneiden-64.png" />
+    <None Remove="Resources\icons8-datenbank-64.png" />
+    <None Remove="Resources\icons8-dokument-im-ordner-64.png" />
+    <None Remove="Resources\icons8-fenster-schließen-64.png" />
+    <None Remove="Resources\icons8-getrennt-64.png" />
+    <None Remove="Resources\icons8-github-64.png" />
+    <None Remove="Resources\icons8-info-64.png" />
+    <None Remove="Resources\icons8-kopieren-64.png" />
+    <None Remove="Resources\icons8-löschen.svg" />
+    <None Remove="Resources\icons8-löschen-64.png" />
+    <None Remove="Resources\icons8-menü-64.png" />
+    <None Remove="Resources\icons8-moon-and-stars-64.png" />
+    <None Remove="Resources\icons8-müll-64.png" />
+    <None Remove="Resources\icons8-neu-erstellen-64.png" />
+    <None Remove="Resources\icons8-ok-64.png" />
+    <None Remove="Resources\icons8-paste-64.png" />
+    <None Remove="Resources\icons8-rückgängig-64.png" />
+    <None Remove="Resources\icons8-speichern-64.png" />
+    <None Remove="Resources\icons8-spielen-64.png" />
+    <None Remove="Resources\icons8-stecker-64.png" />
+    <None Remove="Resources\icons8-sun-64.png" />
+    <None Remove="Resources\icons8-wiederholen-64.png" />
+    <None Remove="Resources\icons8-info-16.png" />
+    <Resource Include="Resources\icons8-info-16.png" />
+    <None Remove="Resources\icons8-info-liquid-glass-color.zip" />
+    <None Remove="Resources\icons8-ausgang-16.png" />
+    <Resource Include="Resources\icons8-ausgang-16.png" />
+    <None Remove="Resources\icons8-kopieren-16.png" />
+    <Resource Include="Resources\icons8-kopieren-16.png" />
+    <None Remove="Resources\icons8-menü-16.png" />
+    <Resource Include="Resources\icons8-menü-16.png" />
+    <None Remove="Resources\icons8-paste-16.png" />
+    <Resource Include="Resources\icons8-paste-16.png" />
+    <None Remove="Resources\icons8-getrennt-16.png" />
+    <None Remove="Resources\icons8-stecker-16.png" />
+    <Resource Include="Resources\icons8-stecker-16.png" />
+    <None Remove="Resources\icons8-spielen-32.png" />
+    <Resource Include="Resources\icons8-spielen-32.png" />
+    <None Remove="Resources\icons8-startseite-16.png" />
+    <Resource Include="Resources\icons8-startseite-16.png" />
+    <None Remove="Resources\icons8-neu-erstellen-32.png" />
+    <Resource Include="Resources\icons8-neu-erstellen-32.png" />
+    <None Remove="Resources\icons8-neu-erstellen-16.png" />
+    <Resource Include="Resources\icons8-neu-erstellen-16.png" />
+    <None Remove="Resources\icons8-dokument-im-ordner-16.png" />
+    <Resource Include="Resources\icons8-dokument-im-ordner-16.png" />
+    <None Remove="Resources\icons8-dokument-im-ordner-32.png" />
+    <Resource Include="Resources\icons8-dokument-im-ordner-32.png" />
+    <None Remove="Resources\icons8-speichern-16.png" />
+    <Resource Include="Resources\icons8-speichern-16.png" />
+    <None Remove="Resources\icons8-speichern-32.png" />
+    <Resource Include="Resources\icons8-speichern-32.png" />
+    <None Remove="Resources\icons8-sql-16.png" />
+    <Resource Include="Resources\icons8-sql-16.png" />
+    <None Remove="Resources\icons8-sql-32.png" />
+    <Resource Include="Resources\icons8-sql-32.png" />
+    <None Remove="Resources\icons8-sql-48.png" />
+    <Resource Include="Resources\icons8-sql-48.png" />
+    <None Remove="Resources\icons8-sql-96.png" />
+    <Resource Include="Resources\icons8-sql-96.png" />
+    <None Remove="Resources\icons8-rückgängig-machen-16.png" />
+    <None Remove="Resources\icons8-rückgängig-machen-32.png" />
+    <None Remove="Resources\icons8-rückgängig-machen-liquid-glass-color.zip" />
+    <None Remove="Resources\icons8-speichern-als-16.png" />
+    <Resource Include="Resources\icons8-speichern-als-16.png" />
+    <None Remove="Resources\icons8-speichern-als-32.png" />
+    <Resource Include="Resources\icons8-speichern-als-32.png" />
+    <None Remove="Resources\icons8-speichern-als-liquid-glass-color.zip" />
+    <None Remove="Resources\icons8-sql-windows-11-color.zip" />
+    <None Remove="Resources\icons8-sql-windows-11-color-favicons.zip" />
+    <None Remove="Resources\icons8-wiederholen-16.png" />
+    <Resource Include="Resources\icons8-wiederholen-16.png" />
+    <None Remove="Resources\icons8-wiederholen-32.png" />
+    <Resource Include="Resources\icons8-wiederholen-32.png" />
+    <None Remove="Resources\icons8-wiederholen-liquid-glass-color.zip" />
+    <None Remove="Resources\icons8-rückgängig-16.png" />
+    <Resource Include="Resources\icons8-rückgängig-16.png" />
+    <None Remove="Resources\icons8-rückgängig-32.png" />
+    <Resource Include="Resources\icons8-rückgängig-32.png" />
+    <None Remove="Resources\icons8-ausschneiden-16.png" />
+    <Resource Include="Resources\icons8-ausschneiden-16.png" />
+    <None Remove="Resources\icons8-ausschneiden-32.png" />
+    <Resource Include="Resources\icons8-ausschneiden-32.png" />
+    <None Remove="Resources\icons8-löschen-16.png" />
+    <Resource Include="Resources\icons8-löschen-16.png" />
+    <None Remove="Resources\icons8-löschen-32.png" />
+    <Resource Include="Resources\icons8-löschen-32.png" />
+    <None Remove="Resources\icons8-schrift-vergrößern-16.png" />
+    <Resource Include="Resources\icons8-schrift-vergrößern-16.png" />
+    <None Remove="Resources\icons8-schrift-verkleinern-16.png" />
+    <Resource Include="Resources\icons8-schrift-verkleinern-16.png" />
+    <None Remove="Resources\icons8-schriftart-formatieren-16.png" />
+    <Resource Include="Resources\icons8-schriftart-formatieren-16.png" />
+    <None Remove="Resources\icons8-schriftart-wählen-16.png" />
+    <Resource Include="Resources\icons8-schriftart-wählen-16.png" />
+    <None Remove="Resources\icons8-schriftart-formatieren-32.png" />
+    <Resource Include="Resources\icons8-schriftart-formatieren-32.png" />
+    <None Remove="Resources\icons8-texthöhe-16.png" />
+    <Resource Include="Resources\icons8-texthöhe-16.png" />
+    <None Remove="Resources\icons8-ausgang-32.png" />
+    <Resource Include="Resources\icons8-ausgang-32.png" />
+    <None Remove="Resources\icons8-getrennt-32.png" />
+    <Resource Include="Resources\icons8-getrennt-32.png" />
+    <None Remove="Resources\icons8-github-16.png" />
+    <Resource Include="Resources\icons8-github-16.png" />
+    <None Remove="Resources\icons8-github-32.png" />
+    <Resource Include="Resources\icons8-github-32.png" />
+    <None Remove="Resources\icons8-kopieren-32.png" />
+    <Resource Include="Resources\icons8-kopieren-32.png" />
+    <None Remove="Resources\icons8-mond-16.png" />
+    <Resource Include="Resources\icons8-mond-16.png" />
+    <None Remove="Resources\icons8-mond-32.png" />
+    <Resource Include="Resources\icons8-mond-32.png" />
+    <None Remove="Resources\icons8-paste-32.png" />
+    <Resource Include="Resources\icons8-paste-32.png" />
+    <None Remove="Resources\icons8-sonne-16.png" />
+    <Resource Include="Resources\icons8-sonne-16.png" />
+    <None Remove="Resources\icons8-sonne-32.png" />
+    <Resource Include="Resources\icons8-sonne-32.png" />
+    <None Remove="Resources\icons8-spielen-16.png" />
+    <Resource Include="Resources\icons8-spielen-16.png" />
+    <None Remove="Resources\icons8-stecker-32.png" />
+    <Resource Include="Resources\icons8-stecker-32.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\icons8-getrennt-16.png" />
   </ItemGroup>
 
 </Project>
