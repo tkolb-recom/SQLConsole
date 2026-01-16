@@ -6,7 +6,7 @@
               xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
               xmlns:ui="clr-namespace:Recom.SQLConsole.UI"
               mc:Ignorable="d"
-              Title="SQL Console" Height="450" Width="800">
+              Title="SQL Console" Height="600" Width="800">
     <Window.DataContext>
         <ui:MainViewModel />
     </Window.DataContext>
@@ -25,22 +25,40 @@
 
             <Ribbon.QuickAccessToolBar>
                 <RibbonQuickAccessToolBar>
-                    <RibbonButton ToolTip="Neu" SmallImageSource="{StaticResource ImageNewFileSmall}" />
-                    <RibbonButton ToolTip="Speichern" SmallImageSource="{StaticResource ImageSaveFileSmall}" />
-                    <RibbonButton ToolTip="Öffnen" SmallImageSource="{StaticResource ImageOpenFileSmall}" />
-                    <RibbonButton ToolTip="Undo" SmallImageSource="{StaticResource ImageUndoSmall}" />
-                    <RibbonButton ToolTip="Redo" SmallImageSource="{StaticResource ImageRedoSmall}" />
+                    <RibbonButton ToolTip="Neu"
+                                  Command="{Binding NewDocumentCommand}"
+                                  SmallImageSource="{StaticResource ImageNewFileSmall}" />
+                    <RibbonButton ToolTip="Öffnen"
+                                  Command="{Binding OpenDocumentCommand}"
+                                  SmallImageSource="{StaticResource ImageOpenFileSmall}" />
+                    <RibbonButton ToolTip="Speichern"
+                                  SmallImageSource="{StaticResource ImageSaveFileSmall}"
+                                  Command="{Binding SaveDocumentCommand}" />
+                    <RibbonButton ToolTip="Undo"
+                                  SmallImageSource="{StaticResource ImageUndoSmall}" />
+                    <RibbonButton ToolTip="Redo"
+                                  SmallImageSource="{StaticResource ImageRedoSmall}" />
                 </RibbonQuickAccessToolBar>
             </Ribbon.QuickAccessToolBar>
 
             <Ribbon.ApplicationMenu>
                 <RibbonApplicationMenu SmallImageSource="{StaticResource ImageMenuSmall}">
-                    <RibbonApplicationMenuItem Header="Neu" ImageSource="{StaticResource ImageNewFile}"/>
-                    <RibbonApplicationMenuItem Header="Öffnen" ImageSource="{StaticResource ImageOpenFile}" />
-                    <RibbonApplicationMenuItem Header="Speichern" ImageSource="{StaticResource ImageSaveFile}" />
-                    <RibbonApplicationMenuItem Header="Speichern als" ImageSource="{StaticResource ImageSaveAs}" />
+                    <RibbonApplicationMenuItem Header="Neu"
+                                               ImageSource="{StaticResource ImageNewFile}"
+                                               Command="{Binding NewDocumentCommand}" />
+                    <RibbonApplicationMenuItem Header="Öffnen"
+                                               ImageSource="{StaticResource ImageOpenFile}"
+                                               Command="{Binding OpenDocumentCommand}" />
+                    <RibbonApplicationMenuItem Header="Speichern"
+                                               ImageSource="{StaticResource ImageSaveFile}"
+                                               Command="{Binding SaveDocumentCommand}" />
+                    <RibbonApplicationMenuItem Header="Speichern als"
+                                               ImageSource="{StaticResource ImageSaveAs}"
+                                               Command="{Binding SaveDocumentAsCommand}" />
                     <RibbonApplicationMenu.FooterPaneContent>
-                        <RibbonButton Label="Beenden" SmallImageSource="{StaticResource ImageExitSmall}" />
+                        <RibbonButton Label="Beenden"
+                                      SmallImageSource="{StaticResource ImageExitSmall}"
+                                      Command="{Binding ExitCommand}" />
                     </RibbonApplicationMenu.FooterPaneContent>
                 </RibbonApplicationMenu>
             </Ribbon.ApplicationMenu>
@@ -53,11 +71,13 @@
                 </RibbonGroup>
                 <RibbonGroup Header="Schrift">
                     <RibbonButton Label="Schrift einstellen" LargeImageSource="{StaticResource ImageFontEdit}" />
-                    <RibbonComboBox ToolTip="Schriftart" SmallImageSource="{StaticResource ImageFontSelect}"/>
-                    <RibbonComboBox ToolTip="Schriftgröße" SmallImageSource="{StaticResource ImageFontSize}"/>
+                    <RibbonComboBox ToolTip="Schriftart" SmallImageSource="{StaticResource ImageFontSelect}" />
+                    <RibbonComboBox ToolTip="Schriftgröße" SmallImageSource="{StaticResource ImageFontSize}" />
                     <StackPanel Orientation="Horizontal">
-                        <RibbonButton ToolTip="Schriftgrad vergrößern" SmallImageSource="{StaticResource ImageFontLarger}"/>
-                        <RibbonButton ToolTip="Schriftgrad verkleinern" SmallImageSource="{StaticResource ImageFontSmaller}" />
+                        <RibbonButton ToolTip="Schriftgrad vergrößern"
+                                      SmallImageSource="{StaticResource ImageFontLarger}" />
+                        <RibbonButton ToolTip="Schriftgrad verkleinern"
+                                      SmallImageSource="{StaticResource ImageFontSmaller}" />
                     </StackPanel>
                 </RibbonGroup>
             </RibbonTab>
@@ -75,8 +95,10 @@
                                   LargeImageSource="{StaticResource ImageRun}" />
                     <RibbonCheckBox x:Name="Transaction"
                                     Label="Transaktion starten"
+                                    ToolTip="Wenn aktiviert, wird das Skript in einer Transaktion ausgeführt."
                                     IsChecked="True" />
                     <RibbonCheckBox Label="Transaktion abschließen"
+                                    ToolTip="Wenn aktiviert, wird die Transaktion mit einem COMMIT abgeschlossen. Anderenfalls erfolgt ein ROLLBACK."
                                     IsEnabled="{Binding Path=IsChecked, ElementName=Transaction}" />
                 </RibbonGroup>
             </RibbonTab>
