@@ -5,6 +5,8 @@
               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
               xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
               xmlns:ui="clr-namespace:Recom.SQLConsole.UI"
+              xmlns:database="clr-namespace:Recom.SQLConsole.Database"
+              xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
               mc:Ignorable="d"
               Title="SQL Console" Height="600" Width="800">
     <Window.DataContext>
@@ -84,22 +86,42 @@
 
             <RibbonTab Header="Datenbank">
                 <RibbonGroup Header="Verbindung">
-                    <RibbonComboBox ToolTip="Datenbank" />
+                    <RibbonComboBox ToolTip="Datenbank"
+                                    SelectionBoxWidth="150"
+                                    IsEditable="False">
+                        <RibbonGallery SelectedItem="{Binding SelectedDatabaseConfig, Mode=TwoWay}">
+                            <RibbonGalleryCategory ItemsSource="{Binding Databases}" DisplayMemberPath="Database">
+                                <!-- <RibbonGalleryCategory.ItemTemplate> -->
+                                <!--     <DataTemplate DataType="{x:Type database:DatabaseConfiguration}"> -->
+                                <!--         <StackPanel> -->
+                                <!--             <Image Source="{StaticResource ImageConnect}" /> -->
+                                <!--             <TextBlock Text="{Binding Database}" /> -->
+                                <!--         </StackPanel> -->
+                                <!--     </DataTemplate> -->
+                                <!-- </RibbonGalleryCategory.ItemTemplate> -->
+                            </RibbonGalleryCategory>
+
+                        </RibbonGallery>
+                    </RibbonComboBox>
                     <RibbonButton Label="Verbinden"
-                                  LargeImageSource="{StaticResource ImageConnect}" />
+                                  LargeImageSource="{StaticResource ImageConnect}"
+                                  Command="{Binding ConnectDatabaseCommand}" />
                     <RibbonButton Label="Trennen"
-                                  LargeImageSource="{StaticResource ImageDisconnect}" />
+                                  LargeImageSource="{StaticResource ImageDisconnect}"
+                                  Command="{Binding DisconnectDatabaseCommand}" />
                 </RibbonGroup>
                 <RibbonGroup Header="Ausführung">
                     <RibbonButton Label="Skript ausführen"
-                                  LargeImageSource="{StaticResource ImageRun}" />
+                                  LargeImageSource="{StaticResource ImageRun}"
+                                  Command="{Binding RunScriptCommand}" />
                     <RibbonCheckBox x:Name="Transaction"
                                     Label="Transaktion starten"
                                     ToolTip="Wenn aktiviert, wird das Skript in einer Transaktion ausgeführt."
-                                    IsChecked="True" />
+                                    IsChecked="{Binding StartTransaction}" />
                     <RibbonCheckBox Label="Transaktion abschließen"
                                     ToolTip="Wenn aktiviert, wird die Transaktion mit einem COMMIT abgeschlossen. Anderenfalls erfolgt ein ROLLBACK."
-                                    IsEnabled="{Binding Path=IsChecked, ElementName=Transaction}" />
+                                    IsEnabled="{Binding Path=IsChecked, ElementName=Transaction}"
+                                    IsChecked="{Binding CommitTransaction}" />
                 </RibbonGroup>
             </RibbonTab>
 
@@ -113,13 +135,18 @@
             </RibbonTab>
         </Ribbon>
 
-        <avalonedit:TextEditor
-            Document="{Binding QueryDocument}"
-            SyntaxHighlighting="SQL"
-            FontFamily="Consolas" FontSize="10pt"
-            ShowLineNumbers="True"
-            LineNumbersForeground="RoyalBlue"
-            BorderThickness="1" BorderBrush="DarkGray"
-            Margin="5" />
+        <avalonedit:TextEditor Document="{Binding QueryDocument}"
+                               SyntaxHighlighting="SQL"
+                               FontFamily="Consolas" FontSize="10pt"
+                               ShowLineNumbers="True"
+                               LineNumbersForeground="RoyalBlue"
+                               BorderThickness="1" BorderBrush="DarkGray"
+                               Margin="5">
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="TextChanged">
+                    <i:InvokeCommandAction Command="{Binding QueryTextChangedCommand}"/>
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+        </avalonedit:TextEditor>
     </DockPanel>
 </RibbonWindow>
