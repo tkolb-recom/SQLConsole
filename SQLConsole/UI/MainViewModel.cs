@@ -19,8 +19,8 @@ public partial class MainViewModel : ObservableObject
     public MainViewModel()
     {
         IEnumerable<RecentFile> recentFiles = Settings.Default.RecentFiles.Split(';')
-                                                        .Where(f => !string.IsNullOrWhiteSpace(f) && File.Exists(f))
-                                                        .Select(f => new RecentFile(f));
+                                                      .Where(f => !string.IsNullOrWhiteSpace(f) && File.Exists(f))
+                                                      .Select(f => new RecentFile(f));
 
         foreach (RecentFile file in recentFiles)
         {
@@ -43,6 +43,10 @@ public partial class MainViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(WindowTitle))]
     private TextDocument? _queryDocument = new TextDocument();
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(WindowTitle))]
+    private bool _documentHasChanges;
+
     public string WindowTitle
     {
         get
@@ -54,7 +58,12 @@ public partial class MainViewModel : ObservableObject
             if (this.QueryDocument?.FileName != null)
             {
                 title += " - " + Path.GetFileName(this.QueryDocument?.FileName);
-            };
+            }
+
+            if (this.DocumentHasChanges)
+            {
+                title += " *";
+            }
 
             return title;
         }
@@ -64,6 +73,7 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     public void OnQueryTextChanged()
     {
+        this.DocumentHasChanges = true;
         this.RunScriptCommand.NotifyCanExecuteChanged();
     }
 
@@ -80,12 +90,21 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     public void NewDocument()
     {
-        this.QueryDocument = new TextDocument();
+        if (this.CheckUnsavedChanged())
+        {
+            this.QueryDocument = new TextDocument();
+            this.DocumentHasChanges = false;
+        }
     }
 
     [RelayCommand]
     public void OpenDocument()
     {
+        if (!this.CheckUnsavedChanged())
+        {
+            return;
+        }
+
         var ofd = new OpenFileDialog
         {
             DefaultExt = "sql",
@@ -103,7 +122,25 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     public void OpenRecentFile(RecentFile file)
     {
+        if (!this.CheckUnsavedChanged())
+        {
+            return;
+        }
+
         this.OpenFile(file.FullPath);
+    }
+
+    private bool CheckUnsavedChanged()
+    {
+        if (!this.DocumentHasChanges)
+        {
+            return true;
+        }
+
+        MessageBoxResult result = MessageBox.Show("Die nicht gespeicherten Änderungen gehen verloren.", "Achtung",
+            MessageBoxButton.OKCancel, MessageBoxImage.Exclamation);
+
+        return result == MessageBoxResult.OK;
     }
 
     private void OpenFile(string filename)
@@ -115,6 +152,7 @@ public partial class MainViewModel : ObservableObject
             FileName = filename,
             Text = File.ReadAllText(filename)
         };
+        this.DocumentHasChanges = false;
     }
 
     [RelayCommand]
@@ -136,6 +174,7 @@ public partial class MainViewModel : ObservableObject
         using FileStream fs = new FileStream(this.QueryDocument.FileName, FileMode.Create);
         using TextWriter tw = new StreamWriter(fs);
         this.QueryDocument.WriteTextTo(tw);
+        this.DocumentHasChanges = false;
     }
 
     [RelayCommand]
@@ -154,6 +193,7 @@ public partial class MainViewModel : ObservableObject
         using FileStream fs = new FileStream(this.QueryDocument.FileName, FileMode.Create);
         using TextWriter tw = new StreamWriter(fs);
         this.QueryDocument.WriteTextTo(tw);
+        this.DocumentHasChanges = false;
     }
 
     private bool SelectFilename()
@@ -176,6 +216,8 @@ public partial class MainViewModel : ObservableObject
         this.UpdateRecentFiles(sfd.FileName);
 
         this.QueryDocument.FileName = sfd.FileName;
+        this.OnPropertyChanged(nameof(this.WindowTitle));
+
         return true;
     }
 
