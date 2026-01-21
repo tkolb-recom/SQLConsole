@@ -29,7 +29,8 @@
                         <DataTemplate>
                             <StackPanel>
                                 <TextBlock Text="{Binding Name}" FontWeight="Bold" />
-                                <TextBlock Text="{Binding FullPath}" FontSize="9" Foreground="Gray" />
+                                <TextBlock Text="{Binding FullPath}" FontSize="9" Foreground="Gray"
+                                           TextTrimming="CharacterEllipsis" />
                             </StackPanel>
                         </DataTemplate>
                     </RibbonApplicationMenuItem.HeaderTemplate>
@@ -40,7 +41,7 @@
     <DockPanel>
         <Ribbon DockPanel.Dock="Top">
             <Ribbon.HelpPaneContent>
-                <RibbonButton SmallImageSource="{StaticResource ImageHelpSmall}" />
+                <RibbonButton SmallImageSource="{StaticResource ImageInfoSmall}" />
             </Ribbon.HelpPaneContent>
 
             <Ribbon.QuickAccessToolBar>
@@ -75,6 +76,9 @@
                     <RibbonApplicationMenuItem Header="Speichern als"
                                                ImageSource="{StaticResource ImageSaveAs}"
                                                Command="{Binding SaveDocumentAsCommand}" />
+                    <RibbonSeparator />
+                    <RibbonApplicationMenuItem Header="Info"
+                                               ImageSource="{StaticResource ImageInfo}" />
 
                     <RibbonApplicationMenu.FooterPaneContent>
                         <RibbonButton Label="Beenden"
@@ -84,12 +88,20 @@
                     </RibbonApplicationMenu.FooterPaneContent>
 
                     <RibbonApplicationMenu.AuxiliaryPaneContent>
-                        <StackPanel Margin="5">
-                            <TextBlock Text="Zuletzt verwendet" />
-                            <Separator />
-                            <ItemsControl ItemsSource="{Binding RecentFiles}"
-                                          ItemTemplate="{StaticResource RecentFileTemplate}"/>
-                        </StackPanel>
+                        <Grid Margin="5" VerticalAlignment="Stretch">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Text="Zuletzt verwendet" />
+                            <Separator Grid.Row="1" />
+                            <ScrollViewer Grid.Row="2"
+                                          VerticalScrollBarVisibility="Auto">
+                                <ItemsControl ItemsSource="{Binding RecentFiles}"
+                                              ItemTemplate="{StaticResource RecentFileTemplate}" />
+                            </ScrollViewer>
+                        </Grid>
                     </RibbonApplicationMenu.AuxiliaryPaneContent>
                 </RibbonApplicationMenu>
             </Ribbon.ApplicationMenu>
@@ -134,9 +146,11 @@
                     </RibbonComboBox>
                     <RibbonButton Label="Verbinden"
                                   LargeImageSource="{StaticResource ImageConnect}"
+                                  SmallImageSource="{StaticResource ImageConnectSmall}"
                                   Command="{Binding ConnectDatabaseCommand}" />
                     <RibbonButton Label="Trennen"
                                   LargeImageSource="{StaticResource ImageDisconnect}"
+                                  SmallImageSource="{StaticResource ImageDisconnectSmall}"
                                   Command="{Binding DisconnectDatabaseCommand}" />
                 </RibbonGroup>
                 <RibbonGroup Header="Ausführung">

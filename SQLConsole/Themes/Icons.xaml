@@ -10,6 +10,7 @@
 	<BitmapImage x:Key="ImageSaveFile" UriSource="/Resources/icons8-speichern-32.png" />
 	<BitmapImage x:Key="ImageSaveFileSmall" UriSource="/Resources/icons8-speichern-16.png" />
 	<BitmapImage x:Key="ImageSaveAs" UriSource="/Resources/icons8-speichern-als-32.png" />
+	<BitmapImage x:Key="ImageSaveAsSmall" UriSource="/Resources/icons8-speichern-als-16.png" />
 	<BitmapImage x:Key="ImageDocument" UriSource="/Resources/icons8-dokument-32.png" />
 	<BitmapImage x:Key="ImageDocumentSmall" UriSource="/Resources/icons8-dokument-16.png" />
 
@@ -20,23 +21,31 @@
 	<BitmapImage x:Key="ImagePaste" UriSource="/Resources/icons8-paste-32.png" />
 	<BitmapImage x:Key="ImagePasteSmall" UriSource="/Resources/icons8-paste-16.png" />
 	<BitmapImage x:Key="ImageDelete" UriSource="/Resources/icons8-löschen-32.png" />
+	<BitmapImage x:Key="ImageDeleteSmall" UriSource="/Resources/icons8-löschen-16.png" />
 
-	<BitmapImage x:Key="ImageHelpSmall" UriSource="/Resources/icons8-info-16.png" />
+	<BitmapImage x:Key="ImageInfo" UriSource="/Resources/icons8-info-32.png" />
+	<BitmapImage x:Key="ImageInfoSmall" UriSource="/Resources/icons8-info-16.png" />
 
 	<BitmapImage x:Key="ImageUndoSmall" UriSource="/Resources/icons8-rückgängig-16.png" />
 	<BitmapImage x:Key="ImageRedoSmall" UriSource="/Resources/icons8-wiederholen-16.png" />
 
 	<BitmapImage x:Key="ImageFontEdit" UriSource="/Resources/icons8-schriftart-formatieren-32.png" />
+	<BitmapImage x:Key="ImageFontEditSmall" UriSource="/Resources/icons8-schriftart-formatieren-16.png" />
 	<BitmapImage x:Key="ImageFontSelect" UriSource="/Resources/icons8-schriftart-wählen-16.png" />
 	<BitmapImage x:Key="ImageFontSize" UriSource="/Resources/icons8-texthöhe-16.png" />
 	<BitmapImage x:Key="ImageFontLarger" UriSource="/Resources/icons8-schrift-vergrößern-16.png" />
 	<BitmapImage x:Key="ImageFontSmaller" UriSource="/Resources/icons8-schrift-verkleinern-16.png" />
 
 	<BitmapImage x:Key="ImageLightTheme" UriSource="/Resources/icons8-sonne-32.png" />
+	<BitmapImage x:Key="ImageLightThemeSmall" UriSource="/Resources/icons8-sonne-16.png" />
 	<BitmapImage x:Key="ImageDarkTheme" UriSource="/Resources/icons8-mond-32.png" />
+	<BitmapImage x:Key="ImageDarkThemeSmall" UriSource="/Resources/icons8-mond-16.png" />
 
 	<BitmapImage x:Key="ImageConnect" UriSource="/Resources/icons8-stecker-32.png" />
+	<BitmapImage x:Key="ImageConnectSmall" UriSource="/Resources/icons8-stecker-16.png" />
 	<BitmapImage x:Key="ImageDisconnect" UriSource="/Resources/icons8-getrennt-32.png" />
+	<BitmapImage x:Key="ImageDisconnectSmall" UriSource="/Resources/icons8-getrennt-16.png" />
 	<BitmapImage x:Key="ImageRun" UriSource="/Resources/icons8-spielen-32.png" />
+	<BitmapImage x:Key="ImageRunSmall" UriSource="/Resources/icons8-spielen-16.png" />
 
 </ResourceDictionary>
