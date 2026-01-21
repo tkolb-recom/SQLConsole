@@ -210,10 +210,19 @@ public partial class MainViewModel : ObservableObject
 
                 if (command.ResultReader != null)
                 {
-                    // TODO result?
-                    var reader =  command.ResultReader;
-                    int columns = reader.FieldCount;
+                    DataTable data = new();
+                    data.Load(command.ResultReader);
 
+                    var resultWindow = new ResultWindow(command.Statement, data);
+                    resultWindow.ShowDialog();
+                }
+                else if (command.AffectedRows > 0)
+                {
+                    MessageBox.Show($"Betroffene Zeilen: {command.AffectedRows}", "Betroffene Zeilen", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show("Keine Ergebnisse zurückgegeben", "Keine Ergebnisse", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
 

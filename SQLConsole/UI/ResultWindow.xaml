@@ -1,0 +1,39 @@
+<Window x:Class="Recom.SQLConsole.UI.ResultWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:ui="clr-namespace:Recom.SQLConsole.UI"
+        xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
+        mc:Ignorable="d"
+        Title="Abfrageergebnis" Height="450" Width="800"
+        WindowStyle="ToolWindow">
+    <Window.DataContext>
+        <ui:ResultViewModel />
+    </Window.DataContext>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="2*"/>
+        </Grid.RowDefinitions>
+        <avalonedit:TextEditor Grid.Row="0" Document="{Binding QueryDocument}"
+                               IsReadOnly="True"
+                               SyntaxHighlighting="SQL"
+                               FontFamily="Consolas" FontSize="10pt"
+                               BorderThickness="1" BorderBrush="DarkGray"
+                               Margin="5">
+        </avalonedit:TextEditor>
+        <GridSplitter Grid.Row="1" Height="3" Margin="5 0"
+                      ResizeDirection="Rows"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Center"/>
+        <DataGrid Grid.Row="2" ItemsSource="{Binding Data.DefaultView}"
+                  AutoGenerateColumns="True"
+                  CanUserAddRows="False" CanUserDeleteRows="False" IsReadOnly="True"
+                  AlternatingRowBackground="#F2F2F2"
+                  GridLinesVisibility="All"
+                  HorizontalGridLinesBrush="#CCCCCC" VerticalGridLinesBrush="#CCCCCC"
+                  Margin="5"/>
+    </Grid>
+</Window>
