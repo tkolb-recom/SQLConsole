@@ -150,6 +150,10 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private bool _commitTransaction;
 
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(DisconnectDatabaseCommand), nameof(RunScriptCommand))]
+    private bool _isRunningScript;
+
     public bool HasActiveDatabase => this.ActiveDatabase != null;
 
     [RelayCommand(CanExecute = nameof(CanConnectDatabase))]
@@ -188,7 +192,7 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    public bool CanDisconnectDatabase() => this.HasActiveDatabase;
+    public bool CanDisconnectDatabase() => this.HasActiveDatabase && !this.IsRunningScript;
 
     [RelayCommand(CanExecute = nameof(CanRunScript))]
     public void RunScript()
@@ -200,49 +204,99 @@ public partial class MainViewModel : ObservableObject
 
         try
         {
-            Transaction? transaction = this.StartTransaction
-                                           ? this.ActiveDatabase.BeginTransaction(IsolationLevel.ReadUncommitted)
-                                           : null;
+            this.ExecuteStatementAsync();
+        }
+        catch (Exception e)
+        {
+            MessageBox.Show(e.ToString(), "Fehler beim Ausführen", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
 
-            using (var command = new SqlCommand(this.QueryDocument.Text))
+    private void ExecuteStatementAsync()
+    {
+        string sql = this.QueryDocument!.Text;
+        SqlDatabase db = this.ActiveDatabase!;
+
+        Task.Run(ExecuteStatement).ContinueWith(DisplayResult, TaskScheduler.FromCurrentSynchronizationContext());
+
+        return;
+
+        (DataTable? data, int? affected) ExecuteStatement()
+        {
+            try
             {
-                command.Execute(this.ActiveDatabase);
+                Application.Current.Dispatcher.Invoke(() => this.IsRunningScript = true);
+
+                Transaction? transaction = this.StartTransaction
+                                               ? db.BeginTransaction(IsolationLevel.ReadUncommitted)
+                                               : null;
+
+                using var command = new SqlCommand(sql);
+                command.Execute(db);
+
+                var result = (data: (DataTable?)null, affected: (int?)0);
 
                 if (command.ResultReader != null)
                 {
                     DataTable data = new();
                     data.Load(command.ResultReader);
-
-                    var resultWindow = new ResultWindow(command.Statement, data);
-                    resultWindow.ShowDialog();
-                }
-                else if (command.AffectedRows > 0)
-                {
-                    MessageBox.Show($"Betroffene Zeilen: {command.AffectedRows}", "Betroffene Zeilen", MessageBoxButton.OK, MessageBoxImage.Information);
+                    result.data = data;
                 }
                 else
                 {
-                    MessageBox.Show("Keine Ergebnisse zurückgegeben", "Keine Ergebnisse", MessageBoxButton.OK, MessageBoxImage.Information);
+                    result.affected = command.AffectedRows;
                 }
-            }
 
-            if (this.CommitTransaction)
-            {
-                transaction?.Commit();
-            }
+                if (this.CommitTransaction)
+                {
+                    transaction?.Commit();
+                }
 
-            if (this.StartTransaction)
+                return result;
+            }
+            finally
             {
-                this.ActiveDatabase.CloseTransaction();
+                if (this.StartTransaction)
+                {
+                    db.CloseTransaction();
+                }
+
+                Application.Current.Dispatcher.Invoke(() => this.IsRunningScript = false);
             }
         }
-        catch (Exception e)
+
+        void DisplayResult(Task<(DataTable? data, int? affected)> t)
         {
-            MessageBox.Show(e.Message, "Fehler beim Ausführen", MessageBoxButton.OK, MessageBoxImage.Error);
+            if (t.IsFaulted)
+            {
+                MessageBox.Show(t.Exception?.GetBaseException().Message ?? "Unbekannter Fehler", "Fehler beim Ausführen",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            (DataTable? data, int? affected) res = t.Result;
+
+            if (res.data != null)
+            {
+                var resultWindow = new ResultWindow(sql, res.data);
+                resultWindow.ShowDialog();
+            }
+            else if (res.affected > 0)
+            {
+                MessageBox.Show($"Betroffene Zeilen: {res.affected}", "Betroffene Zeilen", MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+            else
+            {
+                MessageBox.Show("Es wurden keine Ergebnisse zurückgegeben", "Keine Ergebnisse", MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
         }
     }
 
-    public bool CanRunScript() => this.HasActiveDatabase && !string.IsNullOrWhiteSpace(this.QueryDocument?.Text);
+    public bool CanRunScript() => this.HasActiveDatabase
+                                  && !this.IsRunningScript
+                                  && !string.IsNullOrWhiteSpace(this.QueryDocument?.Text);
 
     #endregion
 }
