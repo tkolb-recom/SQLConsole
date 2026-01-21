@@ -10,6 +10,8 @@
 	<BitmapImage x:Key="ImageSaveFile" UriSource="/Resources/icons8-speichern-32.png" />
 	<BitmapImage x:Key="ImageSaveFileSmall" UriSource="/Resources/icons8-speichern-16.png" />
 	<BitmapImage x:Key="ImageSaveAs" UriSource="/Resources/icons8-speichern-als-32.png" />
+	<BitmapImage x:Key="ImageDocument" UriSource="/Resources/icons8-dokument-32.png" />
+	<BitmapImage x:Key="ImageDocumentSmall" UriSource="/Resources/icons8-dokument-16.png" />
 
 	<BitmapImage x:Key="ImageCopy" UriSource="/Resources/icons8-kopieren-32.png" />
 	<BitmapImage x:Key="ImageCopySmall" UriSource="/Resources/icons8-kopieren-16.png" />

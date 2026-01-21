@@ -1,12 +1,14 @@
 using System.Collections.ObjectModel;
 using System.Data;
 using System.IO;
+using System.Reflection;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ICSharpCode.AvalonEdit.Document;
 using Microsoft.Win32;
 using Recom.SQLConsole.Database;
+using Recom.SQLConsole.Properties;
 
 namespace Recom.SQLConsole.UI;
 
@@ -16,6 +18,15 @@ public partial class MainViewModel : ObservableObject
 
     public MainViewModel()
     {
+        IEnumerable<RecentFile> recentFiles = Settings.Default.RecentFiles.Split(';')
+                                                        .Where(f => !string.IsNullOrWhiteSpace(f) && File.Exists(f))
+                                                        .Select(f => new RecentFile(f));
+
+        foreach (RecentFile file in recentFiles)
+        {
+            this.RecentFiles.Add(file);
+        }
+
         this.Databases.Add(new DatabaseConfiguration
         {
             Database = "MasterContent",
@@ -29,7 +40,26 @@ public partial class MainViewModel : ObservableObject
     }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(WindowTitle))]
     private TextDocument? _queryDocument = new TextDocument();
+
+    public string WindowTitle
+    {
+        get
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            var productAttr = assembly.GetCustomAttribute<AssemblyProductAttribute>();
+            string title = productAttr?.Product ?? assembly.GetName().Name ?? string.Empty;
+
+            if (this.QueryDocument?.FileName != null)
+            {
+                title += " - " + Path.GetFileName(this.QueryDocument?.FileName);
+            };
+
+            return title;
+        }
+        //set => this.SetProperty(ref field, value);
+    }
 
     [RelayCommand]
     public void OnQueryTextChanged()
@@ -45,6 +75,8 @@ public partial class MainViewModel : ObservableObject
 
     #region File management
 
+    public ObservableCollection<RecentFile> RecentFiles { get; } = new();
+
     [RelayCommand]
     public void NewDocument()
     {
@@ -59,15 +91,29 @@ public partial class MainViewModel : ObservableObject
             DefaultExt = "sql",
             Filter = FilterString
         };
+
         if (!ofd.ShowDialog().GetValueOrDefault())
         {
             return;
         }
 
+        this.OpenFile(ofd.FileName);
+    }
+
+    [RelayCommand]
+    public void OpenRecentFile(RecentFile file)
+    {
+        this.OpenFile(file.FullPath);
+    }
+
+    private void OpenFile(string filename)
+    {
+        this.UpdateRecentFiles(filename);
+
         this.QueryDocument = new TextDocument
         {
-            FileName = ofd.FileName,
-            Text = File.ReadAllText(ofd.FileName)
+            FileName = filename,
+            Text = File.ReadAllText(filename)
         };
     }
 
@@ -127,8 +173,30 @@ public partial class MainViewModel : ObservableObject
             return false;
         }
 
+        this.UpdateRecentFiles(sfd.FileName);
+
         this.QueryDocument.FileName = sfd.FileName;
         return true;
+    }
+
+    private void UpdateRecentFiles(string filename)
+    {
+        RecentFile? existing = this.RecentFiles.FirstOrDefault(entry => Equals(entry.FullPath, filename));
+
+        if (existing != null)
+        {
+            this.RecentFiles.Move(this.RecentFiles.IndexOf(existing), 0);
+            return;
+        }
+
+        this.RecentFiles.Insert(0, new RecentFile(filename));
+        if (this.RecentFiles.Count > 10)
+        {
+            this.RecentFiles.RemoveAt(10);
+        }
+
+        Settings.Default.RecentFiles = string.Join(";", this.RecentFiles.Select(f => f.FullPath));
+        Settings.Default.Save();
     }
 
     #endregion

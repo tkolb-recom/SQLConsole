@@ -30,6 +30,9 @@
                       VerticalAlignment="Center"/>
         <DataGrid Grid.Row="2" ItemsSource="{Binding Data.DefaultView}"
                   AutoGenerateColumns="True"
+                  EnableColumnVirtualization="True"
+                  VirtualizingStackPanel.IsVirtualizing="True"
+                  VirtualizingStackPanel.VirtualizationMode="Recycling"
                   CanUserAddRows="False" CanUserDeleteRows="False" IsReadOnly="True"
                   AlternatingRowBackground="#F2F2F2"
                   GridLinesVisibility="All"
