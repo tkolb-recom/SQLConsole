@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
 <SyntaxDefinition name="TSQL" extensions=".sql" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
 	<Color name="Comment" foreground="Green" exampleText="-- comment" />
-	<Color name="Char" foreground="Red" exampleText="name = 'abc'"/>
+	<Color name="Char" foreground="Brown" exampleText="name = 'abc'"/>
 	<Color name="Keywords" fontWeight="bold" foreground="Blue" exampleText="SELECT FROM"/>
+	<Color name="NumberLiteral" foreground="DarkOrange" exampleText="-3.1415"/>
 
 	<Property name="DocCommentMarker" value="///" />
 
@@ -31,6 +32,15 @@
 			<Begin>'</Begin>
 			<End>'</End>
 		</Span>
+
+        <!-- Numbers -->
+        <Rule color="NumberLiteral">
+			-?0[xX][0-9a-fA-F]+     # (neg.) hex number
+        </Rule>
+        <Rule color="NumberLiteral">
+			-?\d+(\.\d+)?           # (neg.) number (with optional floating point)
+			([eE][\+-]?\d+)?         # optional exponent
+        </Rule>
 
 		<Keywords color="Keywords">
 			<Word>abs</Word>
