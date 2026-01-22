@@ -56,9 +56,11 @@
                                   SmallImageSource="{StaticResource ImageSaveFileSmall}"
                                   Command="{Binding SaveDocumentCommand}" />
                     <RibbonButton ToolTip="Undo"
-                                  SmallImageSource="{StaticResource ImageUndoSmall}" />
+                                  SmallImageSource="{StaticResource ImageUndoSmall}"
+                                  Command="Undo"/>
                     <RibbonButton ToolTip="Redo"
-                                  SmallImageSource="{StaticResource ImageRedoSmall}" />
+                                  SmallImageSource="{StaticResource ImageRedoSmall}"
+                                  Command="Redo"/>
                 </RibbonQuickAccessToolBar>
             </Ribbon.QuickAccessToolBar>
 
@@ -108,9 +110,12 @@
 
             <RibbonTab Header="Start">
                 <RibbonGroup Header="Bearbeiten">
-                    <RibbonButton Label="Kopieren" SmallImageSource="{StaticResource ImageCopySmall}" />
-                    <RibbonButton Label="Einfügen" SmallImageSource="{StaticResource ImagePasteSmall}" />
-                    <RibbonButton Label="Ausschneiden" SmallImageSource="{StaticResource ImageCutSmall}" />
+                    <RibbonButton Label="Kopieren" SmallImageSource="{StaticResource ImageCopySmall}"
+                                  Command="Copy"/>
+                    <RibbonButton Label="Einfügen" SmallImageSource="{StaticResource ImagePasteSmall}"
+                                  Command="Paste"/>
+                    <RibbonButton Label="Ausschneiden" SmallImageSource="{StaticResource ImageCutSmall}"
+                                  Command="Cut"/>
                 </RibbonGroup>
                 <RibbonGroup Header="Schrift">
                     <!-- <RibbonButton Label="Schrift einstellen" -->
