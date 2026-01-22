@@ -1,5 +1,4 @@
-﻿using System.Windows;
-using Recom.SQLConsole.Highlighting;
+﻿using Recom.SQLConsole.Highlighting;
 
 namespace Recom.SQLConsole;
 

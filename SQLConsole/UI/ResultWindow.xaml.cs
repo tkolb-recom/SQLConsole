@@ -1,6 +1,3 @@
-using System.Data;
-using System.Windows;
-
 namespace Recom.SQLConsole.UI;
 
 public partial class ResultWindow : Window

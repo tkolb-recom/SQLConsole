@@ -1,5 +1,3 @@
-using System.Data;
-
 namespace Recom.SQLConsole.Database;
 
 public class Transaction(SqlDatabase database) : IDisposable

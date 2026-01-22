@@ -1,6 +1,3 @@
-using System.Data;
-using System.Text.RegularExpressions;
-
 namespace Recom.SQLConsole.Database;
 
 public partial class SqlCommand(string statement) : IDisposable

@@ -1,5 +1,3 @@
-using System.Windows;
-
 namespace Recom.SQLConsole.UI;
 
 public partial class EditDatabaseConfigurationWindow : Window

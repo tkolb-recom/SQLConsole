@@ -1,4 +1,3 @@
-using System.Windows;
 using System.Windows.Input;
 using ICSharpCode.AvalonEdit;
 using Microsoft.Xaml.Behaviors;
