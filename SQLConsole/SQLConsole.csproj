@@ -13,6 +13,7 @@
   <ItemGroup>
     <PackageReference Include="AvalonEdit" Version="6.3.1.120" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="DevExpress.Wpf.Core" Version="24.2.7" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.4" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
   </ItemGroup>
@@ -160,6 +161,22 @@
     <Resource Include="Resources\icons8-dokument-32.png" />
     <None Remove="Resources\icons8-info-32.png" />
     <Resource Include="Resources\icons8-info-32.png" />
+    <None Remove="Resources\icons8-datenbank-16.png" />
+    <Resource Include="Resources\icons8-datenbank-16.png" />
+    <None Remove="Resources\icons8-datenbank-32.png" />
+    <Resource Include="Resources\icons8-datenbank-32.png" />
+    <None Remove="Resources\icons8-entfernen-32.png" />
+    <Resource Include="Resources\icons8-entfernen-32.png" />
+    <None Remove="Resources\icons8-entfernen-16.png" />
+    <Resource Include="Resources\icons8-entfernen-16.png" />
+    <None Remove="Resources\icons8-hinzufügen-16.png" />
+    <Resource Include="Resources\icons8-hinzufügen-16.png" />
+    <None Remove="Resources\icons8-hinzufügen-32.png" />
+    <Resource Include="Resources\icons8-hinzufügen-32.png" />
+    <None Remove="Resources\icons8-support-32.png" />
+    <Resource Include="Resources\icons8-support-32.png" />
+    <None Remove="Resources\icons8-support-16.png" />
+    <Resource Include="Resources\icons8-support-16.png" />
   </ItemGroup>
 
   <ItemGroup>

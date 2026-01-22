@@ -57,10 +57,10 @@
                                   Command="{Binding SaveDocumentCommand}" />
                     <RibbonButton ToolTip="Undo"
                                   SmallImageSource="{StaticResource ImageUndoSmall}"
-                                  Command="Undo"/>
+                                  Command="Undo" />
                     <RibbonButton ToolTip="Redo"
                                   SmallImageSource="{StaticResource ImageRedoSmall}"
-                                  Command="Redo"/>
+                                  Command="Redo" />
                 </RibbonQuickAccessToolBar>
             </Ribbon.QuickAccessToolBar>
 
@@ -111,11 +111,11 @@
             <RibbonTab Header="Start">
                 <RibbonGroup Header="Bearbeiten">
                     <RibbonButton Label="Kopieren" SmallImageSource="{StaticResource ImageCopySmall}"
-                                  Command="Copy"/>
+                                  Command="Copy" />
                     <RibbonButton Label="Einfügen" SmallImageSource="{StaticResource ImagePasteSmall}"
-                                  Command="Paste"/>
+                                  Command="Paste" />
                     <RibbonButton Label="Ausschneiden" SmallImageSource="{StaticResource ImageCutSmall}"
-                                  Command="Cut"/>
+                                  Command="Cut" />
                 </RibbonGroup>
                 <RibbonGroup Header="Schrift">
                     <!-- <RibbonButton Label="Schrift einstellen" -->
@@ -199,7 +199,8 @@
                 <RibbonGroup Header="Verbindung">
                     <RibbonComboBox ToolTip="Datenbank"
                                     SelectionBoxWidth="150"
-                                    IsEditable="False">
+                                    IsEditable="False"
+                                    SmallImageSource="{StaticResource ImageDatabaseSmall}">
                         <RibbonGallery SelectedItem="{Binding SelectedDatabaseConfig, Mode=TwoWay}">
 
                             <RibbonGallery.Resources>
@@ -221,6 +222,9 @@
 
                         </RibbonGallery>
                     </RibbonComboBox>
+                    <RibbonButton Label="Konfiguration"
+                                  SmallImageSource="{StaticResource ImageSettingsSmall}"
+                                  Command="{Binding EditDatabaseConfigCommand}" />
                     <RibbonButton Label="Verbinden"
                                   LargeImageSource="{StaticResource ImageConnect}"
                                   SmallImageSource="{StaticResource ImageConnectSmall}"

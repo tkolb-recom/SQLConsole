@@ -1,15 +1,15 @@
 using System.Reflection;
-using System.Text.RegularExpressions;
 using Microsoft.Data.SqlClient;
 
 namespace Recom.SQLConsole.Database;
 
-public class DatabaseConfiguration
+public partial class DatabaseConfiguration : ObservableObject
 {
     /// <summary>
     /// Name of the database
     /// </summary>
-    public string? Database { get; set; }
+    [ObservableProperty]
+    private string? _database;
 
     /// <summary>
     /// Host that the database is running on

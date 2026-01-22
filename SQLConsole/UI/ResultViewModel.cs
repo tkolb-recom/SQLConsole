@@ -1,5 +1,3 @@
-using System.Data;
-using CommunityToolkit.Mvvm.ComponentModel;
 using ICSharpCode.AvalonEdit.Document;
 
 namespace Recom.SQLConsole.UI;

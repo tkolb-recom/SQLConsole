@@ -1,13 +1,6 @@
-using System.Collections.ObjectModel;
-using System.Data;
 using System.IO;
 using System.Reflection;
-using System.Windows;
-using System.Windows.Media;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using ICSharpCode.AvalonEdit.Document;
-using Microsoft.Win32;
 using Recom.SQLConsole.Database;
 using Recom.SQLConsole.Properties;
 
@@ -331,6 +324,22 @@ public partial class MainViewModel : ObservableObject
     private bool _isRunningScript;
 
     public bool HasActiveDatabase => this.ActiveDatabase != null;
+
+    [RelayCommand]
+    public void EditDatabaseConfig()
+    {
+        var editWindow = new EditDatabaseConfigurationWindow();
+        foreach (DatabaseConfiguration configuration in this.Databases)
+        {
+            editWindow.ViewModel.Configurations.Add(configuration);
+        }
+
+        editWindow.ViewModel.SelectedDatabaseConfig = this.SelectedDatabaseConfig;
+
+        if (editWindow.ShowDialog().GetValueOrDefault())
+        {
+        }
+    }
 
     [RelayCommand(CanExecute = nameof(CanConnectDatabase))]
     public void ConnectDatabase()
