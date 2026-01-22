@@ -3,6 +3,7 @@ using System.Data;
 using System.IO;
 using System.Reflection;
 using System.Windows;
+using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ICSharpCode.AvalonEdit.Document;
@@ -37,6 +38,17 @@ public partial class MainViewModel : ObservableObject
         });
 
         this.SelectedDatabaseConfig = this.Databases.First();
+        this.SelectedFont = Settings.Default.RecentFont ?? "Consolas";
+        this.SelectedFontSize = Settings.Default.RecentFontSize;
+    }
+
+    [RelayCommand]
+    public void RibbonLoaded()
+    {
+        // ribbon combobox (mis)behavior on binding TwoWay correctly
+        this.OnPropertyChanged(nameof(this.SelectedDatabaseConfig));
+        this.OnPropertyChanged(nameof(this.SelectedFont));
+        this.OnPropertyChanged(nameof(this.SelectedFontSize));
     }
 
     [ObservableProperty]
@@ -45,6 +57,7 @@ public partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(WindowTitle))]
+    [NotifyCanExecuteChangedFor(nameof(RunScriptCommand))]
     private bool _documentHasChanges;
 
     public string WindowTitle
@@ -68,13 +81,6 @@ public partial class MainViewModel : ObservableObject
             return title;
         }
         //set => this.SetProperty(ref field, value);
-    }
-
-    [RelayCommand]
-    public void OnQueryTextChanged()
-    {
-        this.DocumentHasChanges = true;
-        this.RunScriptCommand.NotifyCanExecuteChanged();
     }
 
     [RelayCommand]
@@ -228,16 +234,76 @@ public partial class MainViewModel : ObservableObject
         if (existing != null)
         {
             this.RecentFiles.Move(this.RecentFiles.IndexOf(existing), 0);
-            return;
+        }
+        else
+        {
+            this.RecentFiles.Insert(0, new RecentFile(filename));
         }
 
-        this.RecentFiles.Insert(0, new RecentFile(filename));
         if (this.RecentFiles.Count > 10)
         {
             this.RecentFiles.RemoveAt(10);
         }
 
         Settings.Default.RecentFiles = string.Join(";", this.RecentFiles.Select(f => f.FullPath));
+        Settings.Default.Save();
+    }
+
+    #endregion
+
+    #region Font
+
+    public ObservableCollection<string> AvailableFonts { get; }
+        = ["Arial", "Consolas", "Courier New", "Times New Roman"];
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SelectedFontFamily))]
+    private string? _selectedFont = "Consolas";
+
+    public FontFamily SelectedFontFamily
+    {
+        get
+        {
+            System.Diagnostics.Debug.WriteLine(this.SelectedFont ?? "null");
+            return this.SelectedFont != null
+                       ? field = new FontFamily(this.SelectedFont)
+                       : field;
+        }
+    }
+
+    public ObservableCollection<double> AvailableFontSizes { get; }
+        = [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24];
+
+    [ObservableProperty]
+    private double _selectedFontSize = 12;
+
+    [RelayCommand]
+    public void IncreaseFontSize()
+    {
+        if (this.SelectedFontSize < this.AvailableFontSizes.Max())
+        {
+            this.SelectedFontSize = this.AvailableFontSizes[this.AvailableFontSizes.IndexOf(this.SelectedFontSize) + 1];
+        }
+    }
+
+    [RelayCommand]
+    public void DecreaseFontSize()
+    {
+        if (this.SelectedFontSize > this.AvailableFontSizes.Min())
+        {
+            this.SelectedFontSize = this.AvailableFontSizes[this.AvailableFontSizes.IndexOf(this.SelectedFontSize) - 1];
+        }
+    }
+
+    partial void OnSelectedFontChanged(string? value)
+    {
+        Settings.Default.RecentFont = value;
+        Settings.Default.Save();
+    }
+
+    partial void OnSelectedFontSizeChanged(double value)
+    {
+        Settings.Default.RecentFontSize = value;
         Settings.Default.Save();
     }
 

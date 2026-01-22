@@ -33,5 +33,29 @@ namespace Recom.SQLConsole.Properties {
                 this["RecentFiles"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Consolas")]
+        public string RecentFont {
+            get {
+                return ((string)(this["RecentFont"]));
+            }
+            set {
+                this["RecentFont"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("12")]
+        public double RecentFontSize {
+            get {
+                return ((double)(this["RecentFontSize"]));
+            }
+            set {
+                this["RecentFontSize"] = value;
+            }
+        }
     }
 }

@@ -113,14 +113,79 @@
                     <RibbonButton Label="Ausschneiden" SmallImageSource="{StaticResource ImageCutSmall}" />
                 </RibbonGroup>
                 <RibbonGroup Header="Schrift">
-                    <RibbonButton Label="Schrift einstellen" LargeImageSource="{StaticResource ImageFontEdit}" />
-                    <RibbonComboBox ToolTip="Schriftart" SmallImageSource="{StaticResource ImageFontSelect}" />
-                    <RibbonComboBox ToolTip="Schriftgröße" SmallImageSource="{StaticResource ImageFontSize}" />
+                    <!-- <RibbonButton Label="Schrift einstellen" -->
+                    <!--               LargeImageSource="{StaticResource ImageFontEdit}" -->
+                    <!--               SmallImageSource="{StaticResource ImageFontEditSmall}" /> -->
+                    <RibbonComboBox ToolTip="Schriftart"
+                                    IsEditable="False"
+                                    SmallImageSource="{StaticResource ImageFontSelect}"
+                                    SelectionBoxWidth="120">
+                        <RibbonGallery SelectedItem="{Binding SelectedFont, Mode=TwoWay}"
+                                       MaxColumnCount="1">
+                            <RibbonGallery.Resources>
+                                <Style TargetType="RibbonGalleryCategory">
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                    <Setter Property="ItemsPanel">
+                                        <Setter.Value>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel IsItemsHost="True" />
+                                            </ItemsPanelTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </RibbonGallery.Resources>
+
+                            <RibbonGalleryCategory ItemsSource="{Binding AvailableFonts}">
+                                <RibbonGalleryCategory.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid HorizontalAlignment="Stretch" Background="Transparent">
+                                            <TextBlock Text="{Binding}"
+                                                       FontFamily="{Binding}"
+                                                       FontSize="12" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </RibbonGalleryCategory.ItemTemplate>
+                            </RibbonGalleryCategory>
+                        </RibbonGallery>
+                    </RibbonComboBox>
+
                     <StackPanel Orientation="Horizontal">
+
+                        <RibbonComboBox ToolTip="Schriftgröße"
+                                        SelectionBoxWidth="50"
+                                        SmallImageSource="{StaticResource ImageFontSize}">
+                            <RibbonGallery SelectedValue="{Binding SelectedFontSize, Mode=OneWayToSource}"
+                                           SelectedItem="{Binding SelectedFontSize, Mode=OneWay}"
+                                           MaxColumnCount="1">
+                                <RibbonGallery.Resources>
+                                    <Style TargetType="RibbonGalleryCategory">
+                                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                        <Setter Property="ItemsPanel">
+                                            <Setter.Value>
+                                                <ItemsPanelTemplate>
+                                                    <StackPanel IsItemsHost="True" />
+                                                </ItemsPanelTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </RibbonGallery.Resources>
+                                <RibbonGalleryCategory HorizontalContentAlignment="Stretch"
+                                                       ItemsSource="{Binding AvailableFontSizes}">
+                                    <RibbonGalleryCategory.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding}" HorizontalAlignment="Stretch" />
+                                        </DataTemplate>
+                                    </RibbonGalleryCategory.ItemTemplate>
+                                </RibbonGalleryCategory>
+                            </RibbonGallery>
+                        </RibbonComboBox>
+
                         <RibbonButton ToolTip="Schriftgrad vergrößern"
-                                      SmallImageSource="{StaticResource ImageFontLarger}" />
+                                      SmallImageSource="{StaticResource ImageFontLarger}"
+                                      Command="{Binding IncreaseFontSizeCommand}" />
                         <RibbonButton ToolTip="Schriftgrad verkleinern"
-                                      SmallImageSource="{StaticResource ImageFontSmaller}" />
+                                      SmallImageSource="{StaticResource ImageFontSmaller}"
+                                      Command="{Binding DecreaseFontSizeCommand}" />
                     </StackPanel>
                 </RibbonGroup>
             </RibbonTab>
@@ -131,15 +196,22 @@
                                     SelectionBoxWidth="150"
                                     IsEditable="False">
                         <RibbonGallery SelectedItem="{Binding SelectedDatabaseConfig, Mode=TwoWay}">
-                            <RibbonGalleryCategory ItemsSource="{Binding Databases}" DisplayMemberPath="Database">
-                                <!-- <RibbonGalleryCategory.ItemTemplate> -->
-                                <!--     <DataTemplate DataType="{x:Type database:DatabaseConfiguration}"> -->
-                                <!--         <StackPanel> -->
-                                <!--             <Image Source="{StaticResource ImageConnect}" /> -->
-                                <!--             <TextBlock Text="{Binding Database}" /> -->
-                                <!--         </StackPanel> -->
-                                <!--     </DataTemplate> -->
-                                <!-- </RibbonGalleryCategory.ItemTemplate> -->
+
+                            <RibbonGallery.Resources>
+                                <Style TargetType="RibbonGalleryCategory">
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                    <Setter Property="ItemsPanel">
+                                        <Setter.Value>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel IsItemsHost="True" />
+                                            </ItemsPanelTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </RibbonGallery.Resources>
+
+                            <RibbonGalleryCategory ItemsSource="{Binding Databases}"
+                                                   DisplayMemberPath="Database">
                             </RibbonGalleryCategory>
 
                         </RibbonGallery>
@@ -176,20 +248,23 @@
                                   LargeImageSource="{StaticResource ImageDarkTheme}" />
                 </RibbonGroup>
             </RibbonTab>
+
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="Loaded">
+                    <i:InvokeCommandAction Command="{Binding RibbonLoadedCommand}" />
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
         </Ribbon>
 
         <avalonedit:TextEditor Document="{Binding QueryDocument}"
+                               IsModified="{Binding Path=DocumentHasChanges, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                SyntaxHighlighting="SQL"
-                               FontFamily="Consolas" FontSize="10pt"
+                               FontFamily="{Binding SelectedFontFamily}"
+                               FontSize="{Binding SelectedFontSize}"
                                ShowLineNumbers="True"
                                LineNumbersForeground="RoyalBlue"
                                BorderThickness="1" BorderBrush="DarkGray"
                                Margin="5">
-            <i:Interaction.Triggers>
-                <i:EventTrigger EventName="TextChanged">
-                    <i:InvokeCommandAction Command="{Binding QueryTextChangedCommand}" />
-                </i:EventTrigger>
-            </i:Interaction.Triggers>
         </avalonedit:TextEditor>
     </DockPanel>
 </RibbonWindow>
