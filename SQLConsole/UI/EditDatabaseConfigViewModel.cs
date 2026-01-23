@@ -1,10 +1,16 @@
-using DevExpress.Mvvm;
 using Recom.SQLConsole.Database;
 
 namespace Recom.SQLConsole.UI;
 
-public partial class EditDatabaseConfigViewModel : ObservableObject, ISupportServices
+public partial class EditDatabaseConfigViewModel : ObservableObject
 {
+    private readonly INavigationService _navigationService;
+
+    public EditDatabaseConfigViewModel(INavigationService navigationService)
+    {
+        _navigationService = navigationService;
+    }
+
     [ObservableProperty]
     private bool _integratedSecurity = false;
 
@@ -21,11 +27,6 @@ public partial class EditDatabaseConfigViewModel : ObservableObject, ISupportSer
     [NotifyCanExecuteChangedFor(nameof(RemoveCommand))]
     [NotifyPropertyChangedFor(nameof(IntegratedSecurity))]
     private DatabaseConfiguration? _selectedDatabaseConfig;
-
-    public EditDatabaseConfigViewModel()
-    {
-        this.ServiceContainer = new ServiceContainer(this);
-    }
 
     partial void OnSelectedDatabaseConfigChanging(DatabaseConfiguration? value)
     {
@@ -64,15 +65,9 @@ public partial class EditDatabaseConfigViewModel : ObservableObject, ISupportSer
 
     public bool CanRemove() => this.SelectedDatabaseConfig != null;
 
-
     [RelayCommand]
     public void CloseDialog()
     {
-        this.CurrentDialogService.Close(MessageResult.OK);
+        _navigationService.Close(this, true);
     }
-
-    protected ICurrentDialogService CurrentDialogService => this.ServiceContainer.GetService<ICurrentDialogService>();
-
-    /// <inheritdoc />
-    public IServiceContainer ServiceContainer { get; }
 }

@@ -1,8 +1,8 @@
 namespace Recom.SQLConsole.UI;
 
-public partial class EditDatabaseConfigurationWindow : Window
+public partial class EditDatabaseConfigWindow : Window
 {
-    public EditDatabaseConfigurationWindow()
+    public EditDatabaseConfigWindow()
     {
         InitializeComponent();
 

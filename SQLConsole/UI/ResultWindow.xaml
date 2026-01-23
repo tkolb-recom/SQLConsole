@@ -7,10 +7,8 @@
         xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
         mc:Ignorable="d"
         Title="Abfrageergebnis" Height="450" Width="800"
-        WindowStyle="ToolWindow">
-    <Window.DataContext>
-        <ui:ResultViewModel />
-    </Window.DataContext>
+        WindowStyle="ToolWindow"
+        d:DataContext="{d:DesignInstance ui:ResultViewModel}">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>

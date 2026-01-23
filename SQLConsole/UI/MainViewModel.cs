@@ -328,18 +328,22 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     public void EditDatabaseConfig()
     {
-        var editWindow = new EditDatabaseConfigurationWindow();
+        var editConfigViewModel = Dependencies.Get<EditDatabaseConfigViewModel>()!;
         foreach (DatabaseConfiguration configuration in this.Databases)
         {
-            editWindow.ViewModel.Configurations.Add(configuration.Copy());
+            editConfigViewModel.Configurations.Add(configuration.Copy());
         }
 
-        editWindow.ViewModel.SelectedDatabaseConfig = this.SelectedDatabaseConfig;
-        editWindow.Owner = Application.Current.MainWindow;
-
-        if (editWindow.ShowDialog().GetValueOrDefault())
+        if (this.SelectedDatabaseConfig != null)
         {
-            List<DatabaseConfiguration> editedConfigs = editWindow.ViewModel.Configurations.ToList();
+            editConfigViewModel.SelectedDatabaseConfig =
+                editConfigViewModel.Configurations.FirstOrDefault(c => c.Id == this.SelectedDatabaseConfig.Id);
+        }
+
+        var nav = Dependencies.Get<INavigationService>()!;
+        if (nav.ShowDialog(editConfigViewModel, this).GetValueOrDefault())
+        {
+            List<DatabaseConfiguration> editedConfigs = editConfigViewModel.Configurations.ToList();
 
             foreach (DatabaseConfiguration configuration in this.Databases.ToList())
             {
@@ -484,8 +488,12 @@ public partial class MainViewModel : ObservableObject
 
             if (res.data != null)
             {
-                var resultWindow = new ResultWindow(sql, res.data);
-                resultWindow.ShowDialog();
+                var resultViewModel = Dependencies.Get<ResultViewModel>()!;
+                resultViewModel.Statement = sql;
+                resultViewModel.Data = res.data;
+
+                var nav = Dependencies.Get<INavigationService>()!;
+                nav.Navigate(resultViewModel, this);
             }
             else if (res.affected > 0)
             {
