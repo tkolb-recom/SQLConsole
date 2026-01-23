@@ -1,5 +1,3 @@
-using Recom.SQLConsole.Database;
-
 namespace Recom.SQLConsole.UI;
 
 public partial class EditDatabaseConfigViewModel : ObservableObject
@@ -26,9 +24,9 @@ public partial class EditDatabaseConfigViewModel : ObservableObject
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RemoveCommand))]
     [NotifyPropertyChangedFor(nameof(IntegratedSecurity))]
-    private DatabaseConfiguration? _selectedDatabaseConfig;
+    private DatabaseConfigViewModel? _selectedDatabaseConfig;
 
-    partial void OnSelectedDatabaseConfigChanging(DatabaseConfiguration? value)
+    partial void OnSelectedDatabaseConfigChanging(DatabaseConfigViewModel? value)
     {
         if (value != null)
         {
@@ -36,12 +34,12 @@ public partial class EditDatabaseConfigViewModel : ObservableObject
         }
     }
 
-    public ObservableCollection<DatabaseConfiguration> Configurations { get; } = new();
+    public ObservableCollection<DatabaseConfigViewModel> Configurations { get; } = new();
 
     [RelayCommand]
     public void Add()
     {
-        var databaseConfiguration = new DatabaseConfiguration { Database = "Neu" };
+        var databaseConfiguration = new DatabaseConfigViewModel { Database = "Neu" };
         this.Configurations.Add(databaseConfiguration);
         this.SelectedDatabaseConfig = databaseConfiguration;
     }

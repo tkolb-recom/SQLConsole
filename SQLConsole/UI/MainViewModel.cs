@@ -21,16 +21,15 @@ public partial class MainViewModel : ObservableObject
             this.RecentFiles.Add(file);
         }
 
-        this.Databases.Add(new DatabaseConfiguration
+        if (Settings.Default.Databases != null)
         {
-            Database = "MasterContent",
-            Host = "vidab-2",
-            Username = "sa",
-            Password = "dev_sa",
-            Timeout = 30
-        });
+            foreach (DatabaseConfiguration configuration in Settings.Default.Databases)
+            {
+                this.Databases.Add(DatabaseConfigViewModel.FromSettings(configuration));
+            }
+        }
 
-        this.SelectedDatabaseConfig = this.Databases.First();
+        this.SelectedDatabaseConfig = this.Databases.FirstOrDefault();
         this.SelectedFont = Settings.Default.RecentFont ?? "Consolas";
         this.SelectedFontSize = Settings.Default.RecentFontSize;
     }
@@ -304,10 +303,10 @@ public partial class MainViewModel : ObservableObject
 
     #region Database handling
 
-    public ObservableCollection<DatabaseConfiguration> Databases { get; } = new ObservableCollection<DatabaseConfiguration>();
+    public ObservableCollection<DatabaseConfigViewModel> Databases { get; } = new ObservableCollection<DatabaseConfigViewModel>();
 
     [ObservableProperty]
-    DatabaseConfiguration? _selectedDatabaseConfig;
+    DatabaseConfigViewModel? _selectedDatabaseConfig;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ConnectDatabaseCommand), nameof(DisconnectDatabaseCommand), nameof(RunScriptCommand))]
@@ -329,9 +328,9 @@ public partial class MainViewModel : ObservableObject
     public void EditDatabaseConfig()
     {
         var editConfigViewModel = Dependencies.Get<EditDatabaseConfigViewModel>()!;
-        foreach (DatabaseConfiguration configuration in this.Databases)
+        foreach (DatabaseConfigViewModel configuration in this.Databases)
         {
-            editConfigViewModel.Configurations.Add(configuration.Copy());
+            editConfigViewModel.Configurations.Add(configuration);
         }
 
         if (this.SelectedDatabaseConfig != null)
@@ -343,26 +342,33 @@ public partial class MainViewModel : ObservableObject
         var nav = Dependencies.Get<INavigationService>()!;
         if (nav.ShowDialog(editConfigViewModel, this).GetValueOrDefault())
         {
-            List<DatabaseConfiguration> editedConfigs = editConfigViewModel.Configurations.ToList();
+            Guid? selectedConfigId = this.SelectedDatabaseConfig?.Id;
 
-            foreach (DatabaseConfiguration configuration in this.Databases.ToList())
+            List<DatabaseConfigViewModel> editedConfigs = editConfigViewModel.Configurations.ToList();
+
+            foreach (DatabaseConfigViewModel original in this.Databases.ToList())
             {
-                DatabaseConfiguration? matchingConfig = editedConfigs.FirstOrDefault(c => c.Id == configuration.Id);
-                if (matchingConfig != null)
+                if (editedConfigs.All(c => c.Id != original.Id))
                 {
-                    configuration.CopyFrom(matchingConfig);
-                    editedConfigs.Remove(matchingConfig);
-                }
-                else
-                {
-                    this.Databases.Remove(configuration);
+                    this.Databases.Remove(original);
                 }
             }
 
-            foreach (DatabaseConfiguration configuration in editedConfigs)
+            foreach (DatabaseConfigViewModel edited in editedConfigs)
             {
-                this.Databases.Add(configuration);
+                if (this.Databases.All(c => c.Id != edited.Id))
+                {
+                    this.Databases.Add(edited);
+                }
             }
+
+            if (this.Databases.All(c => c.Id != selectedConfigId))
+            {
+                this.SelectedDatabaseConfig = this.Databases.FirstOrDefault();
+            }
+
+            Settings.Default.Databases = new List<DatabaseConfiguration>(this.Databases.Select(c => c.AsSettings()));
+            Settings.Default.Save();
         }
     }
 
@@ -371,7 +377,7 @@ public partial class MainViewModel : ObservableObject
     {
         try
         {
-            this.ActiveDatabase = new SqlDatabase(this.SelectedDatabaseConfig!);
+            this.ActiveDatabase = new SqlDatabase(this.SelectedDatabaseConfig!.Settings!);
             this.ActiveDatabase.Connect();
         }
         catch (Exception e)

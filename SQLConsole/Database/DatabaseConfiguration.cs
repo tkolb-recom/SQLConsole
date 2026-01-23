@@ -1,74 +1,44 @@
 using System.Reflection;
+using System.Xml.Serialization;
 using Microsoft.Data.SqlClient;
 
 namespace Recom.SQLConsole.Database;
 
-public partial class DatabaseConfiguration : ObservableObject
+[Serializable]
+public class DatabaseConfiguration
 {
+    [XmlIgnore]
     public Guid Id { get; private init; } = Guid.NewGuid();
-
-    /// <summary>
-    /// Creates a deep copy of this configuration for editing.
-    /// </summary>
-    public DatabaseConfiguration Copy()
-    {
-        return new DatabaseConfiguration
-        {
-            Id = this.Id,
-            Database = this.Database,
-            Host = this.Host,
-            Username = this.Username,
-            Password = this.Password,
-            Timeout = this.Timeout
-        };
-    }
-
-    /// <summary>
-    /// Copies the values from another configuration into this one after editing.
-    /// </summary>
-    public void CopyFrom(DatabaseConfiguration other)
-    {
-        if (other.Id != this.Id)
-        {
-            throw new ArgumentException("Cannot copy from another configuration with a different ID.", nameof(other));
-        }
-
-        this.Database = other.Database;
-        this.Host = other.Host;
-        this.Username = other.Username;
-        this.Password = other.Password;
-        this.Timeout = other.Timeout;
-    }
 
     /// <summary>
     /// Name of the database
     /// </summary>
-    [ObservableProperty]
-    private string? _database;
+    [XmlAttribute]
+    public string? Database { get; set; }
 
     /// <summary>
     /// Host that the database is running on
     /// </summary>
-    [ObservableProperty]
-    private string? _host;
+    [XmlAttribute]
+    public string? Host { get; set; }
 
     /// <summary>
     /// Username used to access the database.
     /// </summary>
-    [ObservableProperty]
-    private string? _username;
+    [XmlAttribute]
+    public string? Username { get; set; }
 
     /// <summary>
     /// Password used to access the database.
     /// </summary>
-    [ObservableProperty]
-    private string? _password;
+    [XmlAttribute]
+    public string? Password { get; set; }
 
     /// <summary>
     /// Timeout duration, in seconds, for database connection attempts.
     /// </summary>
-    [ObservableProperty]
-    private int _timeout;
+    [XmlAttribute]
+    public int Timeout { get; set; }
 
     public string ConnectionString => this.CreateConnectionString();
 

@@ -57,5 +57,16 @@ namespace Recom.SQLConsole.Properties {
                 this["RecentFontSize"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Generic.List<Recom.SQLConsole.Database.DatabaseConfiguration> Databases {
+            get {
+                return ((global::System.Collections.Generic.List<Recom.SQLConsole.Database.DatabaseConfiguration>)(this["Databases"]));
+            }
+            set {
+                this["Databases"] = value;
+            }
+        }
     }
 }

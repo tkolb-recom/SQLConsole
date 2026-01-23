@@ -13,6 +13,9 @@
     <Setting Name="RecentFontSize" Type="System.Double" Scope="User">
       <Value Profile="(Default)">12</Value>
     </Setting>
+    <Setting Name="Databases" Type="System.Collections.Generic.List&lt;Recom.SQLConsole.Database.DatabaseConfiguration&gt;" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
   </Settings>
 </SettingsFile>
 
