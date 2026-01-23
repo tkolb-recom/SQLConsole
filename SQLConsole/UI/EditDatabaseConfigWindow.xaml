@@ -7,19 +7,25 @@
         xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors"
         xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
         xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+        xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
         mc:Ignorable="d"
-        Title="EditWindow" Width="350"
+        Title="Datenbank-Konfiguration" Width="350"
         ResizeMode="NoResize" SizeToContent="Height"
         WindowStyle="ToolWindow"
         WindowStartupLocation="CenterOwner">
     <Window.DataContext>
         <ui:EditDatabaseConfigViewModel />
     </Window.DataContext>
+    <dxmvvm:Interaction.Behaviors>
+        <dx:CurrentDialogService  />
+    </dxmvvm:Interaction.Behaviors>
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="../Themes/Icons.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <dx:BoolInverseConverter x:Key="BoolInverseConverter"/>
         </ResourceDictionary>
     </Window.Resources>
 
@@ -27,6 +33,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -57,23 +64,30 @@
                 <dxe:TextEdit Margin="0 0 0 5"
                               AlwaysShowLabelAtTop="True" Label="Datenbank"
                               Text="{Binding SelectedDatabaseConfig.Database, FallbackValue={x:Static sys:String.Empty}}" />
-                <CheckBox Content="Windows-Anmeldung"
-                          x:Name="DefaultCredentials"
+                <CheckBox Content="Authentifizierung mit Windows-Konto"
+                          IsChecked="{Binding IntegratedSecurity}"
                           Margin="0 5 0 5" />
                 <dxe:TextEdit Margin="0 0 0 5"
                               AlwaysShowLabelAtTop="True" Label="Anmeldenutzer"
-                              Text="{Binding SelectedDatabaseConfig.UserName, FallbackValue={x:Static sys:String.Empty}}" />
+                              IsEnabled="{Binding IntegratedSecurity, Converter={StaticResource BoolInverseConverter}}"
+                              Text="{Binding SelectedDatabaseConfig.Username, FallbackValue={x:Static sys:String.Empty}}" />
                 <dxe:PasswordBoxEdit Margin="0 0 0 5"
                                      AlwaysShowLabelAtTop="True" Label="Anmeldepasswort"
                                      ShowCapsLockWarningToolTip="True"
                                      ShowPasswordButtonVisibility="Always"
+                                     IsEnabled="{Binding IntegratedSecurity, Converter={StaticResource BoolInverseConverter}}"
                                      Text="{Binding SelectedDatabaseConfig.Password, FallbackValue={x:Static sys:String.Empty}}" />
                 <dxe:SpinEdit
-                    Value="{Binding SelectedDatabaseConfig.TimeOut, Mode=TwoWay, FallbackValue = 30, UpdateSourceTrigger=PropertyChanged}"
+                    Value="{Binding SelectedDatabaseConfig.Timeout, Mode=TwoWay, FallbackValue = 30, UpdateSourceTrigger=PropertyChanged}"
                     IsFloatValue="False" MaxValue="600" MinValue="0"
                     HorizontalContentAlignment="Left"
                     AlwaysShowLabelAtTop="True" Label="Timeout (Sekunden)" />
             </StackPanel>
         </GroupBox>
+
+        <dx:SimpleButton Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3"
+                         Margin="0 5"
+                         Content="Speichern"
+                         Command="{Binding CloseDialogCommand}"/>
     </Grid>
 </Window>

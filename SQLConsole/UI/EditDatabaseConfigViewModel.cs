@@ -1,15 +1,41 @@
+using DevExpress.Mvvm;
 using Recom.SQLConsole.Database;
 
 namespace Recom.SQLConsole.UI;
 
-public partial class EditDatabaseConfigViewModel : ObservableObject
+public partial class EditDatabaseConfigViewModel : ObservableObject, ISupportServices
 {
     [ObservableProperty]
+    private bool _integratedSecurity = false;
+
+    partial void OnIntegratedSecurityChanged(bool value)
+    {
+        if (value)
+        {
+            this.SelectedDatabaseConfig?.Username = null;
+            this.SelectedDatabaseConfig?.Password = null;
+        }
+    }
+
+    [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RemoveCommand))]
+    [NotifyPropertyChangedFor(nameof(IntegratedSecurity))]
     private DatabaseConfiguration? _selectedDatabaseConfig;
 
-    public ObservableCollection<DatabaseConfiguration> Configurations { get; } = new();
+    public EditDatabaseConfigViewModel()
+    {
+        this.ServiceContainer = new ServiceContainer(this);
+    }
 
+    partial void OnSelectedDatabaseConfigChanging(DatabaseConfiguration? value)
+    {
+        if (value != null)
+        {
+            _integratedSecurity = string.IsNullOrWhiteSpace(value.Username) && string.IsNullOrWhiteSpace(value.Password);
+        }
+    }
+
+    public ObservableCollection<DatabaseConfiguration> Configurations { get; } = new();
 
     [RelayCommand]
     public void Add()
@@ -37,4 +63,16 @@ public partial class EditDatabaseConfigViewModel : ObservableObject
     }
 
     public bool CanRemove() => this.SelectedDatabaseConfig != null;
+
+
+    [RelayCommand]
+    public void CloseDialog()
+    {
+        this.CurrentDialogService.Close(MessageResult.OK);
+    }
+
+    protected ICurrentDialogService CurrentDialogService => this.ServiceContainer.GetService<ICurrentDialogService>();
+
+    /// <inheritdoc />
+    public IServiceContainer ServiceContainer { get; }
 }

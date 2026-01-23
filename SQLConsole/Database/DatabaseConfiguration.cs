@@ -5,6 +5,41 @@ namespace Recom.SQLConsole.Database;
 
 public partial class DatabaseConfiguration : ObservableObject
 {
+    public Guid Id { get; private init; } = Guid.NewGuid();
+
+    /// <summary>
+    /// Creates a deep copy of this configuration for editing.
+    /// </summary>
+    public DatabaseConfiguration Copy()
+    {
+        return new DatabaseConfiguration
+        {
+            Id = this.Id,
+            Database = this.Database,
+            Host = this.Host,
+            Username = this.Username,
+            Password = this.Password,
+            Timeout = this.Timeout
+        };
+    }
+
+    /// <summary>
+    /// Copies the values from another configuration into this one after editing.
+    /// </summary>
+    public void CopyFrom(DatabaseConfiguration other)
+    {
+        if (other.Id != this.Id)
+        {
+            throw new ArgumentException("Cannot copy from another configuration with a different ID.", nameof(other));
+        }
+
+        this.Database = other.Database;
+        this.Host = other.Host;
+        this.Username = other.Username;
+        this.Password = other.Password;
+        this.Timeout = other.Timeout;
+    }
+
     /// <summary>
     /// Name of the database
     /// </summary>
@@ -14,24 +49,28 @@ public partial class DatabaseConfiguration : ObservableObject
     /// <summary>
     /// Host that the database is running on
     /// </summary>
-    public string? Host { get; set; }
+    [ObservableProperty]
+    private string? _host;
 
     /// <summary>
     /// Username used to access the database.
     /// </summary>
-    public string? UserName { get; set; }
+    [ObservableProperty]
+    private string? _username;
 
     /// <summary>
     /// Password used to access the database.
     /// </summary>
-    public string? Password { get; set; }
+    [ObservableProperty]
+    private string? _password;
 
     /// <summary>
     /// Timeout duration, in seconds, for database connection attempts.
     /// </summary>
-    public int TimeOut { get; set; }
+    [ObservableProperty]
+    private int _timeout;
 
-    public string ConnectionString => field ??= this.CreateConnectionString();
+    public string ConnectionString => this.CreateConnectionString();
 
     private string CreateConnectionString()
     {
@@ -42,7 +81,7 @@ public partial class DatabaseConfiguration : ObservableObject
             DataSource = host,
             InitialCatalog = this.Database,
             ApplicationName = Assembly.GetExecutingAssembly().FullName,
-            ConnectTimeout = this.TimeOut,
+            ConnectTimeout = this.Timeout,
             /*
             MultipleActiveResultSets = true
             Pooling = Pooling,
@@ -51,13 +90,13 @@ public partial class DatabaseConfiguration : ObservableObject
             TrustServerCertificate = true
         };
 
-        if (string.IsNullOrEmpty(this.UserName) && string.IsNullOrEmpty(this.Password))
+        if (string.IsNullOrEmpty(this.Username) && string.IsNullOrEmpty(this.Password))
         {
             cs.IntegratedSecurity = true; // Windows Auth.
         }
         else
         {
-            cs.UserID = this.UserName;
+            cs.UserID = this.Username;
             cs.Password = this.Password;
         }
 

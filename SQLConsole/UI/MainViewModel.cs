@@ -25,9 +25,9 @@ public partial class MainViewModel : ObservableObject
         {
             Database = "MasterContent",
             Host = "vidab-2",
-            UserName = "sa",
+            Username = "sa",
             Password = "dev_sa",
-            TimeOut = 30
+            Timeout = 30
         });
 
         this.SelectedDatabaseConfig = this.Databases.First();
@@ -331,13 +331,34 @@ public partial class MainViewModel : ObservableObject
         var editWindow = new EditDatabaseConfigurationWindow();
         foreach (DatabaseConfiguration configuration in this.Databases)
         {
-            editWindow.ViewModel.Configurations.Add(configuration);
+            editWindow.ViewModel.Configurations.Add(configuration.Copy());
         }
 
         editWindow.ViewModel.SelectedDatabaseConfig = this.SelectedDatabaseConfig;
+        editWindow.Owner = Application.Current.MainWindow;
 
         if (editWindow.ShowDialog().GetValueOrDefault())
         {
+            List<DatabaseConfiguration> editedConfigs = editWindow.ViewModel.Configurations.ToList();
+
+            foreach (DatabaseConfiguration configuration in this.Databases.ToList())
+            {
+                DatabaseConfiguration? matchingConfig = editedConfigs.FirstOrDefault(c => c.Id == configuration.Id);
+                if (matchingConfig != null)
+                {
+                    configuration.CopyFrom(matchingConfig);
+                    editedConfigs.Remove(matchingConfig);
+                }
+                else
+                {
+                    this.Databases.Remove(configuration);
+                }
+            }
+
+            foreach (DatabaseConfiguration configuration in editedConfigs)
+            {
+                this.Databases.Add(configuration);
+            }
         }
     }
 
