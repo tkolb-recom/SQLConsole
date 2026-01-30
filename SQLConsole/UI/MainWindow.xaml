@@ -7,6 +7,8 @@
               xmlns:ui="clr-namespace:Recom.SQLConsole.UI"
               xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
               xmlns:properties="clr-namespace:Recom.SQLConsole.Properties"
+              xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors"
+              xmlns:sys="clr-namespace:System;assembly=System.Runtime"
               mc:Ignorable="d"
               Title="{Binding WindowTitle}" Height="600" Width="800">
     <Window.DataContext>
@@ -17,6 +19,8 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="../Themes/Icons.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 
             <DataTemplate x:Key="RecentFileTemplate" DataType="{x:Type properties:RecentFile}">
                 <RibbonApplicationMenuItem
@@ -39,7 +43,7 @@
         </ResourceDictionary>
     </Window.Resources>
     <DockPanel>
-        <Ribbon DockPanel.Dock="Top">
+        <Ribbon DockPanel.Dock="Top" SelectedIndex="{Binding SelectedTabIndex}">
             <Ribbon.HelpPaneContent>
                 <RibbonButton SmallImageSource="{StaticResource ImageInfoSmall}" />
             </Ribbon.HelpPaneContent>
@@ -81,7 +85,7 @@
                     <RibbonSeparator />
                     <RibbonApplicationMenuItem Header="Einstellungen"
                                                ImageSource="{StaticResource ImageSettings}"
-                                               Command="{Binding OpenSettingsCommand}"/>
+                                               Command="{Binding OpenSettingsCommand}" />
                     <RibbonApplicationMenuItem Header="Info"
                                                ImageSource="{StaticResource ImageInfo}" />
 
@@ -204,7 +208,7 @@
                                     SelectionBoxWidth="150"
                                     IsEditable="False"
                                     SmallImageSource="{StaticResource ImageDatabaseSmall}">
-                        <RibbonGallery SelectedItem="{Binding SelectedDatabaseConfig, Mode=TwoWay}">
+                        <RibbonGallery SelectedItem="{Binding SelectedReleaseConfig, Mode=TwoWay}">
 
                             <RibbonGallery.Resources>
                                 <Style TargetType="RibbonGalleryCategory">
@@ -219,8 +223,8 @@
                                 </Style>
                             </RibbonGallery.Resources>
 
-                            <RibbonGalleryCategory ItemsSource="{Binding Databases}"
-                                                   DisplayMemberPath="Host">
+                            <RibbonGalleryCategory ItemsSource="{Binding Releases}"
+                                                   DisplayMemberPath="DatabaseName">
                             </RibbonGalleryCategory>
 
                         </RibbonGallery>
@@ -249,7 +253,26 @@
                 </RibbonGroup>
             </RibbonTab>
 
-            <RibbonTab Header="Ansicht">
+            <RibbonTab Header="Repository">
+                <RibbonGroup Header="Veröffentlichen">
+                    <RibbonButton Label="Hinzufügen"
+                                  LargeImageSource="{StaticResource ImageAdd}"
+                                  SmallImageSource="{StaticResource ImageAddSmall}"
+                                  Command="{Binding AddUploadItemCommand}" />
+                    <RibbonSeparator />
+                    <RibbonButton Label="Vorflugkontrolle"
+                                  LargeImageSource="{StaticResource ImagePreflight}"
+                                  SmallImageSource="{StaticResource ImagePreflightSmall}"
+                                  Command="{Binding PreflightCheckCommand}" />
+                    <RibbonButton Label="Hochladen"
+                                  LargeImageSource="{StaticResource ImageLiftoff}"
+                                  SmallImageSource="{StaticResource ImageLiftoffSmall}"
+                                  Command="{Binding UploadCommand}" />
+                </RibbonGroup>
+            </RibbonTab>
+
+            <RibbonTab Header="Ansicht"
+                       Visibility="Hidden">
                 <RibbonGroup Header="Theme">
                     <RibbonButton Label="Hell"
                                   LargeImageSource="{StaticResource ImageLightTheme}" />
@@ -265,15 +288,69 @@
             </i:Interaction.Triggers>
         </Ribbon>
 
-        <avalonedit:TextEditor Document="{Binding QueryDocument}"
-                               IsModified="{Binding Path=DocumentHasChanges, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                               SyntaxHighlighting="SQL"
-                               FontFamily="{Binding SelectedFontFamily}"
-                               FontSize="{Binding SelectedFontSize}"
-                               ShowLineNumbers="True"
-                               LineNumbersForeground="RoyalBlue"
-                               BorderThickness="1" BorderBrush="DarkGray"
-                               Margin="5">
-        </avalonedit:TextEditor>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <avalonedit:TextEditor Grid.Row="0" Grid.Column="0"
+                                   Document="{Binding QueryDocument}"
+                                   IsModified="{Binding Path=DocumentHasChanges, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                   SyntaxHighlighting="SQL"
+                                   FontFamily="{Binding SelectedFontFamily}"
+                                   FontSize="{Binding SelectedFontSize}"
+                                   ShowLineNumbers="True"
+                                   LineNumbersForeground="RoyalBlue"
+                                   BorderThickness="1" BorderBrush="DarkGray"
+                                   IsReadOnly="False"
+                                   Visibility="{Binding IsEditorVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                   Margin="5">
+            </avalonedit:TextEditor>
+
+            <ScrollViewer Grid.Row="0" Grid.Column="0"
+                          BorderThickness="1" BorderBrush="DarkGray"
+                          Visibility="{Binding IsUploadVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
+                          Margin="5">
+                <ItemsControl ItemsSource="{Binding UploadItems}">
+                    <ItemsControl.ItemTemplate>
+
+                        <DataTemplate DataType="{x:Type ui:UploadItem}">
+                            <StackPanel Orientation="Vertical"
+                                        Margin="5">
+                                <dxe:ComboBoxEdit
+                                    ItemsSource="{Binding DataContext.Releases, RelativeSource={RelativeSource AncestorType={x:Type RibbonWindow}}}"
+                                    SelectedItem="{Binding Release, ValidatesOnNotifyDataErrors=True}"
+                                    DisplayMember="Name"
+                                    CausesValidation="True"
+                                    AlwaysShowLabelAtTop="True" Label="Release">
+
+                                    <dxe:ComboBoxEdit.Buttons>
+                                        <dxe:ButtonInfo
+                                            Command="{Binding DataContext.RemoveUploadItemCommand, RelativeSource={RelativeSource AncestorType={x:Type RibbonWindow}}}"
+                                            CommandParameter="{Binding}"
+                                            ToolTip="Entfernen"
+                                            GlyphKind="Minus" />
+                                    </dxe:ComboBoxEdit.Buttons>
+                                </dxe:ComboBoxEdit>
+                                <dxe:BrowsePathEdit Margin="0 5"
+                                                    AlwaysShowLabelAtTop="True" Label="SQL Datei"
+                                                    DialogType="FileOpen"
+                                                    DialogFilter="{Binding DataContext.SqlFilterString, RelativeSource={RelativeSource AncestorType={x:Type RibbonWindow}}}"
+                                                    Text="{Binding FilePath, ValidatesOnNotifyDataErrors=True, FallbackValue={x:Static sys:String.Empty}}"
+                                                    ValidateOnTextInput="True"
+                                                    CausesValidation="True"
+                                                    ToolTip="{Binding FilePath}" />
+                                <Separator Margin="0 3 0 0" />
+                            </StackPanel>
+                        </DataTemplate>
+
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+        </Grid>
     </DockPanel>
 </RibbonWindow>

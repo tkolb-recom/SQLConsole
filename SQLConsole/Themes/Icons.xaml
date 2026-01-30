@@ -57,4 +57,11 @@
 	<BitmapImage x:Key="ImageSettings" UriSource="/Resources/icons8-support-32.png" />
 	<BitmapImage x:Key="ImageSettingsSmall" UriSource="/Resources/icons8-support-16.png" />
 
+	<BitmapImage x:Key="ImageGitHub" UriSource="/Resources/icons8-github-32.png" />
+	<BitmapImage x:Key="ImageGitHubSmall" UriSource="/Resources/icons8-github-16.png" />
+	<BitmapImage x:Key="ImagePreflight" UriSource="/Resources/icons8-bordkarte-32.png" />
+	<BitmapImage x:Key="ImagePreflightSmall" UriSource="/Resources/icons8-bordkarte-16.png" />
+	<BitmapImage x:Key="ImageLiftoff" UriSource="/Resources/icons8-flug-32.png" />
+	<BitmapImage x:Key="ImageLiftoffSmall" UriSource="/Resources/icons8-flug-16.png" />
+
 </ResourceDictionary>

@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Reflection;
 using ICSharpCode.AvalonEdit.Document;
@@ -8,7 +9,7 @@ namespace Recom.SQLConsole.UI;
 
 public partial class MainViewModel : ObservableObject
 {
-    private const string FilterString = "SQL Dateien (*.sql)|*.sql|Alle Dateien (*.*)|*.*";
+    private const string FilterStringConst = "SQL Dateien (*.sql)|*.sql|Alle Dateien (*.*)|*.*";
 
     public MainViewModel()
     {
@@ -26,6 +27,14 @@ public partial class MainViewModel : ObservableObject
 
         this.LoadSettings();
     }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsEditorVisible), nameof(IsUploadVisible))]
+    int _selectedTabIndex;
+
+    public bool IsEditorVisible => this.SelectedTabIndex < 2;
+
+    public bool IsUploadVisible => this.SelectedTabIndex == 2;
 
     [RelayCommand]
     public void RibbonLoaded()
@@ -100,7 +109,7 @@ public partial class MainViewModel : ObservableObject
         var ofd = new OpenFileDialog
         {
             DefaultExt = "sql",
-            Filter = FilterString
+            Filter = FilterStringConst
         };
 
         if (!ofd.ShowDialog().GetValueOrDefault())
@@ -198,7 +207,7 @@ public partial class MainViewModel : ObservableObject
         var sfd = new SaveFileDialog
         {
             DefaultExt = "sql",
-            Filter = FilterString
+            Filter = FilterStringConst
         };
         if (!sfd.ShowDialog().GetValueOrDefault())
         {
@@ -310,8 +319,6 @@ public partial class MainViewModel : ObservableObject
             }
         }
 
-        this.SelectedDatabaseConfig = this.Databases.FirstOrDefault();
-
         if (Settings.Default.Releases != null)
         {
             foreach (ReleaseConfiguration release in Settings.Default.Releases)
@@ -328,13 +335,6 @@ public partial class MainViewModel : ObservableObject
     {
         var settingsViewModel = Dependencies.Get<SettingsViewModel>()!;
 
-        Guid? databaseConfigId = this.SelectedDatabaseConfig?.Id;
-        if (this.SelectedDatabaseConfig != null)
-        {
-            settingsViewModel.SelectedDatabaseConfig =
-                settingsViewModel.DatabaseConfigurations.FirstOrDefault(c => c.Id == this.SelectedDatabaseConfig.Id);
-        }
-
         Guid? releaseConfigId = this.SelectedReleaseConfig?.Id;
         if (this.SelectedReleaseConfig != null)
         {
@@ -346,9 +346,6 @@ public partial class MainViewModel : ObservableObject
         if (nav.ShowDialog(settingsViewModel, this).GetValueOrDefault())
         {
             this.LoadSettings();
-
-            this.SelectedDatabaseConfig = this.Databases.FirstOrDefault(c => c.Id == databaseConfigId) ??
-                                          this.Databases.FirstOrDefault();
 
             this.SelectedReleaseConfig = this.Releases.FirstOrDefault(c => c.Id == releaseConfigId) ??
                                          this.Releases.FirstOrDefault();
@@ -363,6 +360,19 @@ public partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     ReleaseConfigViewModel? _selectedReleaseConfig;
+
+    partial void OnSelectedReleaseConfigChanged(ReleaseConfigViewModel? value)
+    {
+        this.DisconnectDatabase();
+
+        if (value == null)
+        {
+            this.SelectedDatabaseConfig = null;
+            return;
+        }
+
+        this.SelectedDatabaseConfig = this.Databases.FirstOrDefault(c => c.Host == value.DatabaseHost);
+    }
 
     #endregion
 
@@ -534,6 +544,70 @@ public partial class MainViewModel : ObservableObject
     public bool CanRunScript() => this.HasActiveDatabase
                                   && !this.IsRunningScript
                                   && !string.IsNullOrWhiteSpace(this.QueryDocument?.Text);
+
+    #endregion
+
+    #region Upload
+
+    [ObservableProperty]
+    private bool _preflightCheckPassed;
+
+    public static string SqlFilterString => FilterStringConst;
+
+    public ObservableCollection<UploadItem> UploadItems { get; } = new ObservableCollection<UploadItem>();
+
+    [RelayCommand]
+    public void AddUploadItem()
+    {
+        this.UploadItems.Add(new UploadItem());
+        this.PreflightCheckPassed = false;
+    }
+
+    [RelayCommand]
+    public void RemoveUploadItem(UploadItem item) => this.UploadItems.Remove(item);
+
+    [RelayCommand]
+    public void PreflightCheck()
+    {
+        this.PreflightCheckPassed = false;
+
+        if (this.UploadItems.Any(x => x.Release == null || string.IsNullOrWhiteSpace(x.FilePath) || !File.Exists(x.FilePath)))
+        {
+            MessageBox.Show("Mindestens ein Eintrag ist nicht vollständig gültig ausgefüllt", "Fehler", MessageBoxButton.OK,
+                MessageBoxImage.Error);
+            return;
+        }
+
+        if (this.UploadItems.DistinctBy(x => x.Release).Count() != this.UploadItems.Count)
+        {
+            MessageBox.Show("Verschiedene Einträge verweisen auf dasselbe Release", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+        }
+
+        foreach (UploadItem uploadItem in this.UploadItems)
+        {
+            uploadItem.Validate(this.TryRunScript);
+        }
+
+        this.PreflightCheckPassed = this.UploadItems.All(x => !x.HasErrors);
+    }
+
+    private ValidationResult TryRunScript(string? script)
+    {
+        try
+        {
+            return ValidationResult.Success!;
+        }
+        catch (Exception e)
+        {
+            return new ValidationResult(e.Message);
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(PreflightCheckPassed))]
+    public void Upload()
+    {
+    }
 
     #endregion
 }
