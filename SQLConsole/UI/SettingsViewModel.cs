@@ -130,6 +130,13 @@ public partial class SettingsViewModel : ObservableObject
 
     #endregion
 
+    #region Repository
+
+    [ObservableProperty]
+    string? _repositoryPath;
+
+    #endregion
+
     [RelayCommand]
     public void SaveAndClose()
     {
@@ -142,6 +149,7 @@ public partial class SettingsViewModel : ObservableObject
     {
         Settings.Default.Databases = new List<DatabaseConfiguration>(this.DatabaseConfigurations.Select(c => c.AsSettings()));
         Settings.Default.Releases = new List<ReleaseConfiguration>(this.ReleaseConfigurations.Select(c => c.AsSettings()));
+        Settings.Default.RepositoryPath = this.RepositoryPath;
 
         Settings.Default.Save();
     }
@@ -167,5 +175,7 @@ public partial class SettingsViewModel : ObservableObject
         }
 
         this.SelectedReleaseConfig = this.ReleaseConfigurations.FirstOrDefault();
+
+        this.RepositoryPath = Settings.Default.RepositoryPath;
     }
 }

@@ -79,5 +79,17 @@ namespace Recom.SQLConsole.Properties {
                 this["Releases"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string RepositoryPath {
+            get {
+                return ((string)(this["RepositoryPath"]));
+            }
+            set {
+                this["RepositoryPath"] = value;
+            }
+        }
     }
 }

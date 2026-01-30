@@ -32,35 +32,30 @@
 
         <TabControl Grid.Row="0" TabStripPlacement="Left"
                     SelectedIndex="0">
-
             <TabItem Header="Datenbanken">
+
                 <Grid Margin="5">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
 
                     <dxe:ComboBoxEdit Grid.Row="0" Grid.Column="0"
                                       AlwaysShowLabelAtTop="True" Label="Server"
                                       DisplayMember="Host"
                                       SelectedItem="{Binding SelectedDatabaseConfig, Mode=TwoWay}"
-                                      ItemsSource="{Binding DatabaseConfigurations}" />
-                    <dx:SimpleButton Grid.Row="0" Grid.Column="1" Margin="5 0"
-                                     Command="{Binding AddDatabaseCommand}">
-                        <Image Source="{StaticResource ImageAddSmall}" Width="16" Height="16" />
-                    </dx:SimpleButton>
-                    <dx:SimpleButton Grid.Row="0" Grid.Column="2"
-                                     Command="{Binding RemoveDatabaseCommand}">
-                        <Image Source="{StaticResource ImageTrashSmall}" Width="16" Height="16" />
-                    </dx:SimpleButton>
+                                      ItemsSource="{Binding DatabaseConfigurations}">
+                        <dxe:ComboBoxEdit.Buttons>
+                            <dxe:ButtonInfo Command="{Binding AddDatabaseCommand}"
+                                            ToolTip="Hinzufügen"
+                                            GlyphKind="Plus" />
+                            <dxe:ButtonInfo Command="{Binding RemoveDatabaseCommand}"
+                                            ToolTip="Entfernen"
+                                            GlyphKind="Minus" />
+                        </dxe:ComboBoxEdit.Buttons>
+                    </dxe:ComboBoxEdit>
 
-                    <GroupBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+                    <GroupBox Grid.Row="1" Grid.Column="0"
                               Margin="0 5 0 0"
                               Header="Konfiguration"
                               IsEnabled="{Binding SelectedDatabaseConfig, Converter={StaticResource NullToBoolConverter}}">
@@ -71,12 +66,13 @@
                             <CheckBox Content="Abweichender Port"
                                       IsChecked="{Binding PortSelect}"
                                       Margin="0 5 0 5" />
-                            <dxe:SpinEdit Value="{Binding SelectedDatabaseConfig.Port, FallbackValue=null, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                          NullText="&lt;standard&gt;"
-                                          IsFloatValue="False" MaxValue="65535" MinValue="0"
-                                          HorizontalContentAlignment="Left"
-                                          AlwaysShowLabelAtTop="True" Label="Port"
-                                          IsEnabled="{Binding PortSelect}"/>
+                            <dxe:SpinEdit
+                                Value="{Binding SelectedDatabaseConfig.Port, FallbackValue=null, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                NullText="&lt;standard&gt;"
+                                IsFloatValue="False" MaxValue="65535" MinValue="0"
+                                HorizontalContentAlignment="Left"
+                                AlwaysShowLabelAtTop="True" Label="Port"
+                                IsEnabled="{Binding PortSelect}" />
                             <CheckBox Content="Authentifizierung mit Windows-Konto"
                                       IsChecked="{Binding IntegratedSecurity}"
                                       Margin="0 5 0 5" />
@@ -99,37 +95,32 @@
                         </StackPanel>
                     </GroupBox>
                 </Grid>
-            </TabItem>
 
+            </TabItem>
             <TabItem Header="Releases">
 
                 <Grid Margin="5">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
 
                     <dxe:ComboBoxEdit Grid.Row="0" Grid.Column="0"
                                       AlwaysShowLabelAtTop="True" Label="Release"
                                       DisplayMember="Name"
                                       SelectedItem="{Binding SelectedReleaseConfig, Mode=TwoWay}"
-                                      ItemsSource="{Binding ReleaseConfigurations}" />
-                    <dx:SimpleButton Grid.Row="0" Grid.Column="1" Margin="5 0"
-                                     Command="{Binding AddReleaseCommand}">
-                        <Image Source="{StaticResource ImageAddSmall}" Width="16" Height="16" />
-                    </dx:SimpleButton>
-                    <dx:SimpleButton Grid.Row="0" Grid.Column="2"
-                                     Command="{Binding RemoveReleaseCommand}">
-                        <Image Source="{StaticResource ImageTrashSmall}" Width="16" Height="16" />
-                    </dx:SimpleButton>
+                                      ItemsSource="{Binding ReleaseConfigurations}">
+                        <dxe:ComboBoxEdit.Buttons>
+                            <dxe:ButtonInfo Command="{Binding AddReleaseCommand}"
+                                            ToolTip="Hinzufügen"
+                                            GlyphKind="Plus" />
+                            <dxe:ButtonInfo Command="{Binding RemoveReleaseCommand}"
+                                            ToolTip="Entfernen"
+                                            GlyphKind="Minus" />
+                        </dxe:ComboBoxEdit.Buttons>
+                    </dxe:ComboBoxEdit>
 
-                    <GroupBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+                    <GroupBox Grid.Row="1" Grid.Column="0"
                               Margin="0 5 0 0"
                               Header="Release"
                               IsEnabled="{Binding SelectedReleaseConfig, Converter={StaticResource NullToBoolConverter}}">
@@ -151,9 +142,20 @@
                         </StackPanel>
                     </GroupBox>
                 </Grid>
-            </TabItem>
 
+            </TabItem>
             <TabItem Header="Repository">
+
+                <GroupBox Margin="5"
+                          Header="Repository"
+                          IsEnabled="{Binding SelectedReleaseConfig, Converter={StaticResource NullToBoolConverter}}">
+
+                    <dxe:BrowsePathEdit Margin="0 5 0 5"
+                                        AlwaysShowLabelAtTop="True" Label="Pfad zum Repository"
+                                        DialogType="Folder"
+                                        Text="{Binding RepositoryPath, FallbackValue={x:Static sys:String.Empty}}">
+                    </dxe:BrowsePathEdit>
+                </GroupBox>
 
             </TabItem>
         </TabControl>
