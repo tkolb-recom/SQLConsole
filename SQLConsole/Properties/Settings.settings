@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)">
   <Profiles>
-    <Profile Name="(Default)" />
+    <Profile Name="(Default)"/>
   </Profiles>
   <Settings>
     <Setting Name="RecentFiles" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)"/>
     </Setting>
     <Setting Name="RecentFont" Type="System.String" Scope="User">
       <Value Profile="(Default)">Consolas</Value>
@@ -13,8 +13,15 @@
     <Setting Name="RecentFontSize" Type="System.Double" Scope="User">
       <Value Profile="(Default)">12</Value>
     </Setting>
-    <Setting Name="Databases" Type="System.Collections.Generic.List&lt;Recom.SQLConsole.Database.DatabaseConfiguration&gt;" Scope="User">
-      <Value Profile="(Default)" />
+    <Setting Name="Databases"
+             Type="System.Collections.Generic.List&lt;Recom.SQLConsole.Properties.DatabaseConfiguration&gt;"
+             Scope="User">
+      <Value Profile="(Default)"/>
+    </Setting>
+    <Setting Name="Releases"
+             Type="System.Collections.Generic.List&lt;Recom.SQLConsole.Properties.ReleaseConfiguration&gt;"
+             Scope="User">
+      <Value Profile="(Default)"/>
     </Setting>
   </Settings>
 </SettingsFile>

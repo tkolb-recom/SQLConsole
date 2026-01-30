@@ -52,9 +52,9 @@
 
 	<BitmapImage x:Key="ImageAdd" UriSource="/Resources/icons8-hinzufügen-32.png" />
 	<BitmapImage x:Key="ImageAddSmall" UriSource="/Resources/icons8-hinzufügen-16.png" />
-	<BitmapImage x:Key="ImageTrash" UriSource="/Resources/icons8-entfernen-16.png" />
+	<BitmapImage x:Key="ImageTrash" UriSource="/Resources/icons8-entfernen-32.png" />
 	<BitmapImage x:Key="ImageTrashSmall" UriSource="/Resources/icons8-entfernen-16.png" />
-	<BitmapImage x:Key="ImageSettings" UriSource="/Resources/icons8-support-16.png" />
+	<BitmapImage x:Key="ImageSettings" UriSource="/Resources/icons8-support-32.png" />
 	<BitmapImage x:Key="ImageSettingsSmall" UriSource="/Resources/icons8-support-16.png" />
 
 </ResourceDictionary>

@@ -60,12 +60,23 @@ namespace Recom.SQLConsole.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::System.Collections.Generic.List<Recom.SQLConsole.Database.DatabaseConfiguration> Databases {
+        public global::System.Collections.Generic.List<Recom.SQLConsole.Properties.DatabaseConfiguration> Databases {
             get {
-                return ((global::System.Collections.Generic.List<Recom.SQLConsole.Database.DatabaseConfiguration>)(this["Databases"]));
+                return ((global::System.Collections.Generic.List<Recom.SQLConsole.Properties.DatabaseConfiguration>)(this["Databases"]));
             }
             set {
                 this["Databases"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Generic.List<Recom.SQLConsole.Properties.ReleaseConfiguration> Releases {
+            get {
+                return ((global::System.Collections.Generic.List<Recom.SQLConsole.Properties.ReleaseConfiguration>)(this["Releases"]));
+            }
+            set {
+                this["Releases"] = value;
             }
         }
     }

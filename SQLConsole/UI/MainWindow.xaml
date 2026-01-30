@@ -79,6 +79,9 @@
                                                ImageSource="{StaticResource ImageSaveAs}"
                                                Command="{Binding SaveDocumentAsCommand}" />
                     <RibbonSeparator />
+                    <RibbonApplicationMenuItem Header="Einstellungen"
+                                               ImageSource="{StaticResource ImageSettings}"
+                                               Command="{Binding OpenSettingsCommand}"/>
                     <RibbonApplicationMenuItem Header="Info"
                                                ImageSource="{StaticResource ImageInfo}" />
 
@@ -217,14 +220,11 @@
                             </RibbonGallery.Resources>
 
                             <RibbonGalleryCategory ItemsSource="{Binding Databases}"
-                                                   DisplayMemberPath="Database">
+                                                   DisplayMemberPath="Host">
                             </RibbonGalleryCategory>
 
                         </RibbonGallery>
                     </RibbonComboBox>
-                    <RibbonButton Label="Konfiguration"
-                                  SmallImageSource="{StaticResource ImageSettingsSmall}"
-                                  Command="{Binding EditDatabaseConfigCommand}" />
                     <RibbonButton Label="Verbinden"
                                   LargeImageSource="{StaticResource ImageConnect}"
                                   SmallImageSource="{StaticResource ImageConnectSmall}"

@@ -10,7 +10,7 @@ public class Transaction(SqlDatabase database) : IDisposable
 
     public IDbTransaction? Begin(IsolationLevel level)
     {
-        IDbConnection connection = database.CreateConnection();
+        IDbConnection connection = database.CreateConnection(database.DatabaseName!);
         connection.Open();
 
         _dbTransaction = connection.BeginTransaction(level);

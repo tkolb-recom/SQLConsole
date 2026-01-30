@@ -22,7 +22,7 @@ public static class Dependencies
 
         services.AddTransient<MainViewModel>();
         services.AddTransient<ResultViewModel>();
-        services.AddTransient<EditDatabaseConfigViewModel>();
+        services.AddTransient<SettingsViewModel>();
 
         return services.BuildServiceProvider();
     }
@@ -33,7 +33,7 @@ public static class Dependencies
 
         nav.Register<MainViewModel, MainWindow>();
         nav.Register<ResultViewModel, ResultWindow>();
-        nav.Register<EditDatabaseConfigViewModel, EditDatabaseConfigWindow>();
+        nav.Register<SettingsViewModel, SettingsWindow>();
 
         return services;
     }

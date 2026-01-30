@@ -21,17 +21,10 @@ public partial class MainViewModel : ObservableObject
             this.RecentFiles.Add(file);
         }
 
-        if (Settings.Default.Databases != null)
-        {
-            foreach (DatabaseConfiguration configuration in Settings.Default.Databases)
-            {
-                this.Databases.Add(DatabaseConfigViewModel.FromSettings(configuration));
-            }
-        }
-
-        this.SelectedDatabaseConfig = this.Databases.FirstOrDefault();
         this.SelectedFont = Settings.Default.RecentFont ?? "Consolas";
         this.SelectedFontSize = Settings.Default.RecentFontSize;
+
+        this.LoadSettings();
     }
 
     [RelayCommand]
@@ -45,6 +38,7 @@ public partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(WindowTitle))]
+    [NotifyCanExecuteChangedFor(nameof(RunScriptCommand))]
     private TextDocument? _queryDocument = new TextDocument();
 
     [ObservableProperty]
@@ -301,6 +295,77 @@ public partial class MainViewModel : ObservableObject
 
     #endregion
 
+    #region Settings
+
+    private void LoadSettings()
+    {
+        this.Databases.Clear();
+        this.Releases.Clear();
+
+        if (Settings.Default.Databases != null)
+        {
+            foreach (DatabaseConfiguration configuration in Settings.Default.Databases)
+            {
+                this.Databases.Add(DatabaseConfigViewModel.FromSettings(configuration));
+            }
+        }
+
+        this.SelectedDatabaseConfig = this.Databases.FirstOrDefault();
+
+        if (Settings.Default.Releases != null)
+        {
+            foreach (ReleaseConfiguration release in Settings.Default.Releases)
+            {
+                this.Releases.Add(ReleaseConfigViewModel.FromSettings(release));
+            }
+        }
+
+        this.SelectedReleaseConfig = this.Releases.FirstOrDefault();
+    }
+
+    [RelayCommand]
+    public void OpenSettings()
+    {
+        var settingsViewModel = Dependencies.Get<SettingsViewModel>()!;
+
+        Guid? databaseConfigId = this.SelectedDatabaseConfig?.Id;
+        if (this.SelectedDatabaseConfig != null)
+        {
+            settingsViewModel.SelectedDatabaseConfig =
+                settingsViewModel.DatabaseConfigurations.FirstOrDefault(c => c.Id == this.SelectedDatabaseConfig.Id);
+        }
+
+        Guid? releaseConfigId = this.SelectedReleaseConfig?.Id;
+        if (this.SelectedReleaseConfig != null)
+        {
+            settingsViewModel.SelectedReleaseConfig =
+                settingsViewModel.ReleaseConfigurations.FirstOrDefault(c => c.Id == this.SelectedReleaseConfig.Id);
+        }
+
+        var nav = Dependencies.Get<INavigationService>()!;
+        if (nav.ShowDialog(settingsViewModel, this).GetValueOrDefault())
+        {
+            this.LoadSettings();
+
+            this.SelectedDatabaseConfig = this.Databases.FirstOrDefault(c => c.Id == databaseConfigId) ??
+                                          this.Databases.FirstOrDefault();
+
+            this.SelectedReleaseConfig = this.Releases.FirstOrDefault(c => c.Id == releaseConfigId) ??
+                                         this.Releases.FirstOrDefault();
+        }
+    }
+
+    #endregion
+
+    #region Release handling
+
+    public ObservableCollection<ReleaseConfigViewModel> Releases { get; } = new ObservableCollection<ReleaseConfigViewModel>();
+
+    [ObservableProperty]
+    ReleaseConfigViewModel? _selectedReleaseConfig;
+
+    #endregion
+
     #region Database handling
 
     public ObservableCollection<DatabaseConfigViewModel> Databases { get; } = new ObservableCollection<DatabaseConfigViewModel>();
@@ -324,61 +389,13 @@ public partial class MainViewModel : ObservableObject
 
     public bool HasActiveDatabase => this.ActiveDatabase != null;
 
-    [RelayCommand]
-    public void EditDatabaseConfig()
-    {
-        var editConfigViewModel = Dependencies.Get<EditDatabaseConfigViewModel>()!;
-        foreach (DatabaseConfigViewModel configuration in this.Databases)
-        {
-            editConfigViewModel.Configurations.Add(configuration);
-        }
-
-        if (this.SelectedDatabaseConfig != null)
-        {
-            editConfigViewModel.SelectedDatabaseConfig =
-                editConfigViewModel.Configurations.FirstOrDefault(c => c.Id == this.SelectedDatabaseConfig.Id);
-        }
-
-        var nav = Dependencies.Get<INavigationService>()!;
-        if (nav.ShowDialog(editConfigViewModel, this).GetValueOrDefault())
-        {
-            Guid? selectedConfigId = this.SelectedDatabaseConfig?.Id;
-
-            List<DatabaseConfigViewModel> editedConfigs = editConfigViewModel.Configurations.ToList();
-
-            foreach (DatabaseConfigViewModel original in this.Databases.ToList())
-            {
-                if (editedConfigs.All(c => c.Id != original.Id))
-                {
-                    this.Databases.Remove(original);
-                }
-            }
-
-            foreach (DatabaseConfigViewModel edited in editedConfigs)
-            {
-                if (this.Databases.All(c => c.Id != edited.Id))
-                {
-                    this.Databases.Add(edited);
-                }
-            }
-
-            if (this.Databases.All(c => c.Id != selectedConfigId))
-            {
-                this.SelectedDatabaseConfig = this.Databases.FirstOrDefault();
-            }
-
-            Settings.Default.Databases = new List<DatabaseConfiguration>(this.Databases.Select(c => c.AsSettings()));
-            Settings.Default.Save();
-        }
-    }
-
     [RelayCommand(CanExecute = nameof(CanConnectDatabase))]
     public void ConnectDatabase()
     {
         try
         {
             this.ActiveDatabase = new SqlDatabase(this.SelectedDatabaseConfig!.Settings!);
-            this.ActiveDatabase.Connect();
+            this.ActiveDatabase.Connect("MasterContent"); // TODO from ReleaseConfig
         }
         catch (Exception e)
         {

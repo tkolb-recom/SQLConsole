@@ -1,4 +1,6 @@
+using System.Reflection;
 using Microsoft.Data.SqlClient;
+using Recom.SQLConsole.Properties;
 using IsolationLevel = System.Data.IsolationLevel;
 
 namespace Recom.SQLConsole.Database;
@@ -13,11 +15,49 @@ public class SqlDatabase(DatabaseConfiguration configuration) : IDisposable
 
     public IDbConnection? Connection { get; private set; }
 
-    public IDbConnection Connect() => this.Connection = this.CreateConnection();
+    public string? DatabaseName { get; private set; }
 
-    public IDbConnection CreateConnection() => new SqlConnection(this.Configuration.ConnectionString);
+    public IDbConnection Connect(string database)
+        => this.Connection = this.CreateConnection(database);
+
+    public IDbConnection CreateConnection(string database)
+        => new SqlConnection(this.CreateConnectionString(database));
 
     public void Disconnect() => this.Connection?.Close();
+
+    private string CreateConnectionString(string database)
+    {
+        this.DatabaseName = database;
+        string host = $"{this.Configuration.Host}{(this.Configuration.Port > 0 ? $",{this.Configuration.Port}" : "")}";
+
+        SqlConnectionStringBuilder cs = new SqlConnectionStringBuilder
+        {
+            DataSource = host,
+            InitialCatalog = database,
+            ApplicationName = Assembly.GetExecutingAssembly().FullName,
+            ConnectTimeout = this.Configuration.Timeout,
+            /*
+            MultipleActiveResultSets = true
+            Pooling = Pooling,
+            Encrypt = EncryptEnabled
+            */
+            TrustServerCertificate = true
+        };
+
+        if (string.IsNullOrEmpty(this.Configuration.Username)
+            && string.IsNullOrEmpty(this.Configuration.Password))
+        {
+            cs.IntegratedSecurity = true; // Windows Auth.
+        }
+        else
+        {
+            cs.UserID = this.Configuration.Username;
+            cs.Password = this.Configuration.Password;
+        }
+
+        /* force escape the database name to fix problems with hyphens (-) and allow db names like grips-fr */
+        return Regex.Replace(cs.ConnectionString, "(Initial Catalog=)([^;]+)", "$1'$2'");
+    }
 
     public Transaction BeginTransaction(IsolationLevel level = IsolationLevel.Unspecified)
     {

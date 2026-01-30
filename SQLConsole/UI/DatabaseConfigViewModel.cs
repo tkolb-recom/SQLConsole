@@ -1,4 +1,4 @@
-using Recom.SQLConsole.Database;
+using Recom.SQLConsole.Properties;
 
 namespace Recom.SQLConsole.UI;
 
@@ -11,14 +11,14 @@ public partial class DatabaseConfigViewModel : ObservableObject
     /// <summary>
     /// Creates a deep copy of the configuration for the view models.
     /// </summary>
-    public static DatabaseConfigViewModel FromSettings(Recom.SQLConsole.Database.DatabaseConfiguration settings)
+    public static DatabaseConfigViewModel FromSettings(DatabaseConfiguration settings)
     {
         return new DatabaseConfigViewModel
         {
             Settings = settings,
             Id = settings.Id,
-            Database = settings.Database,
             Host = settings.Host,
+            Port = settings.Port == 0 ? null : settings.Port,
             Username = settings.Username,
             Password = settings.Password,
             Timeout = settings.Timeout
@@ -31,8 +31,8 @@ public partial class DatabaseConfigViewModel : ObservableObject
     public DatabaseConfiguration AsSettings()
     {
         DatabaseConfiguration settings = this.Settings ?? new DatabaseConfiguration();
-        settings.Database = this.Database;
         settings.Host = this.Host;
+        settings.Port = this.Port ?? 0;
         settings.Username = this.Username;
         settings.Password = this.Password;
         settings.Timeout = this.Timeout;
@@ -41,10 +41,10 @@ public partial class DatabaseConfigViewModel : ObservableObject
     }
 
     [ObservableProperty]
-    private string? _database;
+    private string? _host;
 
     [ObservableProperty]
-    private string? _host;
+    private int? _port;
 
     [ObservableProperty]
     private string? _username;
