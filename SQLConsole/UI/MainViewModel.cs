@@ -413,7 +413,7 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    public bool CanConnectDatabase() => this.SelectedDatabaseConfig != null && !this.HasActiveDatabase;
+    public bool CanConnectDatabase => this.SelectedDatabaseConfig != null && !this.HasActiveDatabase;
 
     [RelayCommand(CanExecute = nameof(CanDisconnectDatabase))]
     public void DisconnectDatabase()
@@ -435,7 +435,7 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    public bool CanDisconnectDatabase() => this.HasActiveDatabase && !this.IsRunningScript;
+    public bool CanDisconnectDatabase => this.HasActiveDatabase && !this.IsRunningScript;
 
     [RelayCommand(CanExecute = nameof(CanRunScript))]
     public void RunScript()
@@ -550,6 +550,7 @@ public partial class MainViewModel : ObservableObject
     #region Upload
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(UploadCommand))]
     private bool _preflightCheckPassed;
 
     public static string SqlFilterString => FilterStringConst;
@@ -559,40 +560,57 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     public void AddUploadItem()
     {
-        this.UploadItems.Add(new UploadItem());
+        var uploadItem = new UploadItem
+        {
+            // select the first release not already in the list
+            Release = this.Releases.FirstOrDefault(x => !this.UploadItems.Select(i => i.Release).Contains(x))
+        };
+        this.UploadItems.Add(uploadItem);
+        uploadItem.Validate();
+
         this.PreflightCheckPassed = false;
+        this.PreflightCheckCommand.NotifyCanExecuteChanged();
     }
 
     [RelayCommand]
-    public void RemoveUploadItem(UploadItem item) => this.UploadItems.Remove(item);
+    public void RemoveUploadItem(UploadItem item)
+    {
+        this.UploadItems.Remove(item);
+        this.PreflightCheckCommand.NotifyCanExecuteChanged();
+    }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanExecutePreflightCheck))]
     public void PreflightCheck()
     {
         this.PreflightCheckPassed = false;
 
-        if (this.UploadItems.Any(x => x.Release == null || string.IsNullOrWhiteSpace(x.FilePath) || !File.Exists(x.FilePath)))
+        foreach (UploadItem uploadItem in this.UploadItems)
         {
-            MessageBox.Show("Mindestens ein Eintrag ist nicht vollständig gültig ausgefüllt", "Fehler", MessageBoxButton.OK,
+            uploadItem.Validate(this.ValidateUniqueRelease, this.TryRunScript);
+        }
+
+        if (this.UploadItems.Any(x => x.HasErrors))
+        {
+            MessageBox.Show("Mindestens ein Eintrag ist nicht vollständig gültig.", "Vorflugkontrolle", MessageBoxButton.OK,
                 MessageBoxImage.Error);
             return;
         }
 
-        if (this.UploadItems.DistinctBy(x => x.Release).Count() != this.UploadItems.Count)
-        {
-            MessageBox.Show("Verschiedene Einträge verweisen auf dasselbe Release", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
-            return;
-        }
-
-        foreach (UploadItem uploadItem in this.UploadItems)
-        {
-            uploadItem.Validate(this.TryRunScript);
-        }
+        MessageBox.Show("Alle Prüfungen wurden abgeschlossen.", "Vorflugkontrolle", MessageBoxButton.OK, MessageBoxImage.Information);
 
         this.PreflightCheckPassed = this.UploadItems.All(x => !x.HasErrors);
     }
 
-    private ValidationResult TryRunScript(string? script)
+    public bool CanExecutePreflightCheck => this.UploadItems.Any();
+
+    ValidationResult ValidateUniqueRelease(ReleaseConfigViewModel? release)
+    {
+        return this.UploadItems.Count(x => Equals(x.Release?.Name, release?.Name)) > 1
+                   ? new ValidationResult(ValidationMessages.MultipleReferences)
+                   : ValidationResult.Success!;
+    }
+
+    private ValidationResult TryRunScript(string? filePath)
     {
         try
         {

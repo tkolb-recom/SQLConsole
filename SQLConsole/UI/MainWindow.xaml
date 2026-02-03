@@ -322,7 +322,7 @@
                                         Margin="5">
                                 <dxe:ComboBoxEdit
                                     ItemsSource="{Binding DataContext.Releases, RelativeSource={RelativeSource AncestorType={x:Type RibbonWindow}}}"
-                                    SelectedItem="{Binding Release, ValidatesOnNotifyDataErrors=True}"
+                                    SelectedItem="{Binding Release, UpdateSourceTrigger=PropertyChanged}"
                                     DisplayMember="Name"
                                     CausesValidation="True"
                                     AlwaysShowLabelAtTop="True" Label="Release">
@@ -339,8 +339,9 @@
                                                     AlwaysShowLabelAtTop="True" Label="SQL Datei"
                                                     DialogType="FileOpen"
                                                     DialogFilter="{Binding DataContext.SqlFilterString, RelativeSource={RelativeSource AncestorType={x:Type RibbonWindow}}}"
-                                                    Text="{Binding FilePath, ValidatesOnNotifyDataErrors=True, FallbackValue={x:Static sys:String.Empty}}"
+                                                    Text="{Binding FilePath, UpdateSourceTrigger=PropertyChanged, FallbackValue={x:Static sys:String.Empty}}"
                                                     ValidateOnTextInput="True"
+                                                    ValidateOnEnterKeyPressed="True"
                                                     CausesValidation="True"
                                                     ToolTip="{Binding FilePath}" />
                                 <Separator Margin="0 3 0 0" />
