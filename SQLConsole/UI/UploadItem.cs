@@ -7,6 +7,9 @@ namespace Recom.SQLConsole.UI;
 
 public partial class UploadItem : ObservableValidator
 {
+    [CustomValidation(typeof(UploadItem), nameof(ValidateUploadIsExecutable))]
+    public Guid Id { get; private init; } = Guid.NewGuid();
+
     [ObservableProperty]
     [NotifyDataErrorInfo]
     [CustomValidation(typeof(UploadItem), nameof(ValidateUniquity))]
@@ -17,23 +20,22 @@ public partial class UploadItem : ObservableValidator
     [NotifyDataErrorInfo]
     [Required(ErrorMessageResourceType = typeof(ValidationMessages), ErrorMessageResourceName = nameof(ValidationMessages.RequiredField))]
     [CustomValidation(typeof(UploadItem), nameof(ValidateFileExists))]
-    [CustomValidation(typeof(UploadItem), nameof(ValidateFileIsExecutable))]
     private string? _filePath;
 
     private static Func<ReleaseConfigViewModel?, ValidationResult>? _validateRelease;
-    private static Func<string?, ValidationResult>? _validateScript;
+    private static Func<Guid, ValidationResult>? _validateUpload;
 
     public bool Validate(Func<ReleaseConfigViewModel?, ValidationResult>? validateRelease = null,
-        Func<string?, ValidationResult>? validateScript = null)
+        Func<Guid, ValidationResult>? validateUpload = null)
     {
         _validateRelease = validateRelease;
-        _validateScript = validateScript;
+        _validateUpload = validateUpload;
 
         this.ClearErrors();
         this.ValidateAllProperties();
 
         _validateRelease = null;
-        _validateScript = null;
+        _validateUpload = null;
 
         return this.HasErrors;
     }
@@ -50,8 +52,8 @@ public partial class UploadItem : ObservableValidator
                    : new ValidationResult(ValidationMessages.FileDoesNotExist);
     }
 
-    public static ValidationResult ValidateFileIsExecutable(string? value, ValidationContext validationContext)
+    public static ValidationResult ValidateUploadIsExecutable(Guid id, ValidationContext validationContext)
     {
-        return _validateScript?.Invoke(value) ?? ValidationResult.Success!;
+        return _validateUpload?.Invoke(id) ?? ValidationResult.Success!;
     }
 }

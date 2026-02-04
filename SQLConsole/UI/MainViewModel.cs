@@ -394,7 +394,7 @@ public partial class MainViewModel : ObservableObject
     private bool _commitTransaction;
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(DisconnectDatabaseCommand), nameof(RunScriptCommand))]
+    [NotifyCanExecuteChangedFor(nameof(DisconnectDatabaseCommand), nameof(RunScriptCommand), nameof(PreflightCheckCommand))]
     private bool _isRunningScript;
 
     public bool HasActiveDatabase => this.ActiveDatabase != null;
@@ -405,7 +405,7 @@ public partial class MainViewModel : ObservableObject
         try
         {
             this.ActiveDatabase = new SqlDatabase(this.SelectedDatabaseConfig!.Settings!);
-            this.ActiveDatabase.Connect("MasterContent"); // TODO from ReleaseConfig
+            this.ActiveDatabase.Connect(this.SelectedReleaseConfig!.DatabaseName!);
         }
         catch (Exception e)
         {
@@ -584,41 +584,109 @@ public partial class MainViewModel : ObservableObject
     {
         this.PreflightCheckPassed = false;
 
-        foreach (UploadItem uploadItem in this.UploadItems)
+        try
         {
-            uploadItem.Validate(this.ValidateUniqueRelease, this.TryRunScript);
+            this.ExecuteValidationAsync();
         }
-
-        if (this.UploadItems.Any(x => x.HasErrors))
+        catch (Exception e)
         {
-            MessageBox.Show("Mindestens ein Eintrag ist nicht vollständig gültig.", "Vorflugkontrolle", MessageBoxButton.OK,
-                MessageBoxImage.Error);
-            return;
+            MessageBox.Show(e.ToString(), "Fehler beim Ausführen", MessageBoxButton.OK, MessageBoxImage.Error);
         }
-
-        MessageBox.Show("Alle Prüfungen wurden abgeschlossen.", "Vorflugkontrolle", MessageBoxButton.OK, MessageBoxImage.Information);
-
-        this.PreflightCheckPassed = this.UploadItems.All(x => !x.HasErrors);
     }
 
-    public bool CanExecutePreflightCheck => this.UploadItems.Any();
+    public bool CanExecutePreflightCheck => this.UploadItems.Any() && !this.IsRunningScript;
 
-    ValidationResult ValidateUniqueRelease(ReleaseConfigViewModel? release)
+    private void ExecuteValidationAsync()
+    {
+        Task.Run(Validate).ContinueWith(CheckErrors, TaskScheduler.FromCurrentSynchronizationContext());
+
+        return;
+
+        void Validate()
+        {
+            foreach (UploadItem uploadItem in this.UploadItems)
+            {
+                uploadItem.Validate(this.ValidateUniqueRelease, this.ValidateUpload);
+            }
+        }
+
+        void CheckErrors(Task t)
+        {
+            if (this.UploadItems.Any(x => x.HasErrors))
+            {
+                MessageBox.Show("Mindestens ein Eintrag ist nicht vollständig gültig.", "Vorflugkontrolle", MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                return;
+            }
+
+            MessageBox.Show("Alle Prüfungen wurden abgeschlossen.", "Vorflugkontrolle", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            this.PreflightCheckPassed = this.UploadItems.All(x => !x.HasErrors);
+        }
+    }
+
+    private ValidationResult ValidateUniqueRelease(ReleaseConfigViewModel? release)
     {
         return this.UploadItems.Count(x => Equals(x.Release?.Name, release?.Name)) > 1
                    ? new ValidationResult(ValidationMessages.MultipleReferences)
                    : ValidationResult.Success!;
     }
 
-    private ValidationResult TryRunScript(string? filePath)
+    private ValidationResult ValidateUpload(Guid guid)
     {
         try
         {
-            return ValidationResult.Success!;
+            UploadItem uploadItem = this.UploadItems.First(x => x.Id == guid);
+
+            Application.Current.Dispatcher.Invoke(() => this.IsRunningScript = true);
+            return this.ExecuteUploadStatement(uploadItem);
         }
         catch (Exception e)
         {
             return new ValidationResult(e.Message);
+        }
+        finally
+        {
+            Application.Current.Dispatcher.Invoke(() => this.IsRunningScript = false);
+        }
+    }
+
+    private ValidationResult ExecuteUploadStatement(UploadItem uploadItem)
+    {
+        ReleaseConfigViewModel release = uploadItem.Release!;
+        DatabaseConfigViewModel dbConfig
+            = this.Databases.First(x => string.Equals(x.Host, release.DatabaseHost, StringComparison.InvariantCultureIgnoreCase));
+
+        using SqlDatabase db = new SqlDatabase(dbConfig.Settings!);
+
+        try
+        {
+            db.Connect(release.DatabaseName!);
+            db.BeginTransaction(IsolationLevel.ReadUncommitted);
+
+            string sql = File.ReadAllText(uploadItem.FilePath!);
+            using var command = new SqlCommand(sql);
+            command.Execute(db);
+
+            int resultCount = 0;
+
+            if (command.ResultReader != null)
+            {
+                DataTable data = new();
+                data.Load(command.ResultReader);
+                resultCount = data.Rows.Count;
+            }
+            else
+            {
+                resultCount = command.AffectedRows.GetValueOrDefault();
+            }
+
+            return ValidationResult.Success!;
+        }
+        finally
+        {
+            db.CloseTransaction();
+            db.Disconnect();
         }
     }
 
