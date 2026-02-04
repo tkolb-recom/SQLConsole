@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Windows.Data;
 
-namespace Recom.SQLConsole.UI;
+namespace Recom.SQLConsole.Views;
 
 public class NullToBooleanConverter : IValueConverter
 {

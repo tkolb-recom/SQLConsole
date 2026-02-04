@@ -1,4 +1,4 @@
-namespace Recom.SQLConsole.DI;
+namespace Recom.SQLConsole.Services;
 
 public enum GitAuthMethod
 {

@@ -1,4 +1,6 @@
-namespace Recom.SQLConsole.UI;
+using Recom.SQLConsole.ViewModels;
+
+namespace Recom.SQLConsole.Views;
 
 public partial class SettingsWindow : Window
 {

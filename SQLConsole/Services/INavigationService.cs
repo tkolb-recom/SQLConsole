@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace Recom.SQLConsole.DI;
+namespace Recom.SQLConsole.Services;
 
 public interface INavigationService
 {

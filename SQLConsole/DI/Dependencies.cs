@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
-using Recom.SQLConsole.UI;
+using Recom.SQLConsole.Services;
+using Recom.SQLConsole.ViewModels;
+using Recom.SQLConsole.Views;
 
 namespace Recom.SQLConsole.DI;
 

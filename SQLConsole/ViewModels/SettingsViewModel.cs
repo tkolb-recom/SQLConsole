@@ -1,6 +1,7 @@
 using Recom.SQLConsole.Properties;
+using Recom.SQLConsole.Services;
 
-namespace Recom.SQLConsole.UI;
+namespace Recom.SQLConsole.ViewModels;
 
 public partial class SettingsViewModel : ObservableObject
 {

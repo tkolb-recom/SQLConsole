@@ -1,17 +1,17 @@
-﻿<RibbonWindow x:Class="Recom.SQLConsole.UI.MainWindow"
+﻿<RibbonWindow x:Class="Recom.SQLConsole.Views.MainWindow"
               xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
               xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
-              xmlns:ui="clr-namespace:Recom.SQLConsole.UI"
               xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
               xmlns:properties="clr-namespace:Recom.SQLConsole.Properties"
               xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors"
               xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+              xmlns:viewModels="clr-namespace:Recom.SQLConsole.ViewModels"
               mc:Ignorable="d"
               Title="{Binding WindowTitle}" Height="600" Width="800"
-              d:DataContext="{d:DesignInstance ui:MainViewModel}">
+              d:DataContext="{d:DesignInstance viewModels:MainViewModel}">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -315,7 +315,7 @@
                 <ItemsControl ItemsSource="{Binding UploadItems}">
                     <ItemsControl.ItemTemplate>
 
-                        <DataTemplate DataType="{x:Type ui:UploadItem}">
+                        <DataTemplate DataType="{x:Type viewModels:UploadItem}">
                             <StackPanel Orientation="Vertical"
                                         Margin="5">
                                 <dxe:ComboBoxEdit

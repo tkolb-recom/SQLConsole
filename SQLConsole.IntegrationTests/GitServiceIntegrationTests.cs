@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using Recom.SQLConsole.DI;
+using Recom.SQLConsole.Services;
 
 namespace SQLConsole.IntegrationTests;
 

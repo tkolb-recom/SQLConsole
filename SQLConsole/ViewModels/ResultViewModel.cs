@@ -1,6 +1,6 @@
 using ICSharpCode.AvalonEdit.Document;
 
-namespace Recom.SQLConsole.UI;
+namespace Recom.SQLConsole.ViewModels;
 
 public partial class ResultViewModel : ObservableObject
 {

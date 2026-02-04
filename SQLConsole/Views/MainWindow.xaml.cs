@@ -1,6 +1,7 @@
 ﻿using System.Windows.Controls.Ribbon;
+using Recom.SQLConsole.ViewModels;
 
-namespace Recom.SQLConsole.UI;
+namespace Recom.SQLConsole.Views;
 
 /// <summary>
 /// Interaction logic for MainWindow.xaml

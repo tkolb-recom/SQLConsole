@@ -1,4 +1,4 @@
-namespace Recom.SQLConsole.UI;
+namespace Recom.SQLConsole.Views;
 
 public partial class ResultWindow : Window
 {

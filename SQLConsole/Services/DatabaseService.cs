@@ -1,7 +1,7 @@
 using Recom.SQLConsole.Database;
 using Recom.SQLConsole.Properties;
 
-namespace Recom.SQLConsole.DI;
+namespace Recom.SQLConsole.Services;
 
 public class DatabaseService
 {

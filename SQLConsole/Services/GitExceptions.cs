@@ -1,4 +1,4 @@
-namespace Recom.SQLConsole.DI;
+namespace Recom.SQLConsole.Services;
 
 public class GitServiceException : Exception
 {
@@ -21,7 +21,7 @@ public class GitConflictException : GitServiceException
 
     public GitConflictException(string message, IEnumerable<string>? conflictedFiles = null) : base(message)
     {
-        ConflictedFiles = conflictedFiles;
+        this.ConflictedFiles = conflictedFiles;
     }
 }
 

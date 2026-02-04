@@ -3,7 +3,7 @@ using System.IO;
 using Recom.SQLConsole.Properties;
 using ValidationResult = System.ComponentModel.DataAnnotations.ValidationResult;
 
-namespace Recom.SQLConsole.UI;
+namespace Recom.SQLConsole.ViewModels;
 
 public partial class UploadItem : ObservableValidator
 {

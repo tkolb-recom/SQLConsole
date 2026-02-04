@@ -1,4 +1,4 @@
-namespace Recom.SQLConsole.DI;
+namespace Recom.SQLConsole.Services;
 
 /// <summary>
 /// Provides common Git operations (clone, add, commit, push, pull, status, init).

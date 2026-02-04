@@ -4,8 +4,9 @@ using System.Reflection;
 using ICSharpCode.AvalonEdit.Document;
 using Recom.SQLConsole.Database;
 using Recom.SQLConsole.Properties;
+using Recom.SQLConsole.Services;
 
-namespace Recom.SQLConsole.UI;
+namespace Recom.SQLConsole.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
@@ -51,9 +52,9 @@ public partial class MainViewModel : ObservableObject
     public void RibbonLoaded()
     {
         // ribbon combobox (mis)behavior on binding TwoWay correctly
-        this.OnPropertyChanged(nameof(this.SelectedDatabaseConfig));
-        this.OnPropertyChanged(nameof(this.SelectedFont));
-        this.OnPropertyChanged(nameof(this.SelectedFontSize));
+        this.OnPropertyChanged(nameof(SelectedDatabaseConfig));
+        this.OnPropertyChanged(nameof(SelectedFont));
+        this.OnPropertyChanged(nameof(SelectedFontSize));
     }
 
     [ObservableProperty]
@@ -76,7 +77,7 @@ public partial class MainViewModel : ObservableObject
 
             if (this.QueryDocument?.FileName != null)
             {
-                title += " - " + Path.GetFileName(this.QueryDocument?.FileName);
+                title += " - " + Path.GetFileName((string?)this.QueryDocument?.FileName);
             }
 
             if (this.DocumentHasChanges)
@@ -477,7 +478,7 @@ public partial class MainViewModel : ObservableObject
         {
             try
             {
-                Application.Current.Dispatcher.Invoke(() => this.IsRunningScript = true);
+                Application.Current.Dispatcher.Invoke<bool>(() => this.IsRunningScript = true);
 
                 _databaseService.ExecuteSql(sql, this.StartTransaction, this.CommitTransaction);
 
@@ -490,7 +491,7 @@ public partial class MainViewModel : ObservableObject
                     db.CloseTransaction();
                 }
 
-                Application.Current.Dispatcher.Invoke(() => this.IsRunningScript = false);
+                Application.Current.Dispatcher.Invoke<bool>(() => this.IsRunningScript = false);
             }
         }
 
@@ -548,7 +549,7 @@ public partial class MainViewModel : ObservableObject
         var uploadItem = new UploadItem
         {
             // select the first release not already in the list
-            Release = this.Releases.FirstOrDefault(x => !this.UploadItems.Select(i => i.Release).Contains(x))
+            Release = this.Releases.FirstOrDefault(x => !this.UploadItems.Select<UploadItem, ReleaseConfigViewModel?>(i => i.Release).Contains(x))
         };
         this.UploadItems.Add(uploadItem);
         uploadItem.Validate();
@@ -628,13 +629,13 @@ public partial class MainViewModel : ObservableObject
         {
             UploadItem uploadItem = this.UploadItems.First(x => x.Id == guid);
 
-            Application.Current.Dispatcher.Invoke(() => this.IsRunningScript = true);
+            Application.Current.Dispatcher.Invoke<bool>(() => this.IsRunningScript = true);
 
             return this.ExecuteUploadStatement(uploadItem);
         }
         finally
         {
-            Application.Current.Dispatcher.Invoke(() => this.IsRunningScript = false);
+            Application.Current.Dispatcher.Invoke<bool>(() => this.IsRunningScript = false);
         }
     }
 

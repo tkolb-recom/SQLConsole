@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using LibGit2Sharp;
 using Xunit;
 using Recom.SQLConsole.DI;
+using Recom.SQLConsole.Services;
 
 namespace SQLConsole.IntegrationTests;
 
