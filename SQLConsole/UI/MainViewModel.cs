@@ -13,13 +13,16 @@ public partial class MainViewModel : ObservableObject
 
     private readonly INavigationService _navigationService;
     private readonly DatabaseService _databaseService;
+    private readonly IGitService _gitService;
 
     public MainViewModel(
         INavigationService navigationService,
-        DatabaseService databaseService)
+        DatabaseService databaseService,
+        IGitService gitService)
     {
         _navigationService = navigationService;
         _databaseService = databaseService;
+        _gitService = gitService;
 
         IEnumerable<RecentFile> recentFiles = Settings.Default.RecentFiles.Split(';')
                                                       .Where(f => !string.IsNullOrWhiteSpace(f) && File.Exists(f))

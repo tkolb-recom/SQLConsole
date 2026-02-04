@@ -19,3 +19,7 @@ global using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
 global using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
 
 global using Recom.SQLConsole.DI;
+global using LibGit2Sharp;
+global using LibGit2Sharp.Handlers;
+global using System.Threading.Tasks;
+global using System.Threading;

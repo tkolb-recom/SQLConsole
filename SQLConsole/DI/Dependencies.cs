@@ -20,6 +20,7 @@ public static class Dependencies
 
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<DatabaseService>();
+        services.AddSingleton<IGitService, GitService>();
 
         services.AddTransient<MainViewModel>();
         services.AddTransient<ResultViewModel>();
