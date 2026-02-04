@@ -19,6 +19,7 @@ public static class Dependencies
         var services = new ServiceCollection();
 
         services.AddSingleton<INavigationService, NavigationService>();
+        services.AddSingleton<DatabaseService>();
 
         services.AddTransient<MainViewModel>();
         services.AddTransient<ResultViewModel>();

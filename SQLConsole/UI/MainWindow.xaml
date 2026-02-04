@@ -10,10 +10,8 @@
               xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors"
               xmlns:sys="clr-namespace:System;assembly=System.Runtime"
               mc:Ignorable="d"
-              Title="{Binding WindowTitle}" Height="600" Width="800">
-    <Window.DataContext>
-        <ui:MainViewModel />
-    </Window.DataContext>
+              Title="{Binding WindowTitle}" Height="600" Width="800"
+              d:DataContext="{d:DesignInstance ui:MainViewModel}">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

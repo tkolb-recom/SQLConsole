@@ -10,5 +10,7 @@ public partial class MainWindow : RibbonWindow
     public MainWindow()
     {
         this.InitializeComponent();
+
+        this.DataContext = Dependencies.Get<MainViewModel>()!;
     }
 }

@@ -11,8 +11,16 @@ public partial class MainViewModel : ObservableObject
 {
     private const string FilterStringConst = "SQL Dateien (*.sql)|*.sql|Alle Dateien (*.*)|*.*";
 
-    public MainViewModel()
+    private readonly INavigationService _navigationService;
+    private readonly DatabaseService _databaseService;
+
+    public MainViewModel(
+        INavigationService navigationService,
+        DatabaseService databaseService)
     {
+        _navigationService = navigationService;
+        _databaseService = databaseService;
+
         IEnumerable<RecentFile> recentFiles = Settings.Default.RecentFiles.Split(';')
                                                       .Where(f => !string.IsNullOrWhiteSpace(f) && File.Exists(f))
                                                       .Select(f => new RecentFile(f));
@@ -342,8 +350,7 @@ public partial class MainViewModel : ObservableObject
                 settingsViewModel.ReleaseConfigurations.FirstOrDefault(c => c.Id == this.SelectedReleaseConfig.Id);
         }
 
-        var nav = Dependencies.Get<INavigationService>()!;
-        if (nav.ShowDialog(settingsViewModel, this).GetValueOrDefault())
+        if (_navigationService.ShowDialog(settingsViewModel, this).GetValueOrDefault())
         {
             this.LoadSettings();
 
@@ -378,7 +385,7 @@ public partial class MainViewModel : ObservableObject
 
     #region Database handling
 
-    public ObservableCollection<DatabaseConfigViewModel> Databases { get; } = new ObservableCollection<DatabaseConfigViewModel>();
+    private ObservableCollection<DatabaseConfigViewModel> Databases { get; } = new ObservableCollection<DatabaseConfigViewModel>();
 
     [ObservableProperty]
     DatabaseConfigViewModel? _selectedDatabaseConfig;
@@ -397,15 +404,15 @@ public partial class MainViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(DisconnectDatabaseCommand), nameof(RunScriptCommand), nameof(PreflightCheckCommand))]
     private bool _isRunningScript;
 
-    public bool HasActiveDatabase => this.ActiveDatabase != null;
+    private bool HasActiveDatabase => _databaseService.ActiveDatabase != null;
 
     [RelayCommand(CanExecute = nameof(CanConnectDatabase))]
     public void ConnectDatabase()
     {
         try
         {
-            this.ActiveDatabase = new SqlDatabase(this.SelectedDatabaseConfig!.Settings!);
-            this.ActiveDatabase.Connect(this.SelectedReleaseConfig!.DatabaseName!);
+            _databaseService.ConnectToDatabase(this.SelectedDatabaseConfig!.Settings!, this.SelectedReleaseConfig!.DatabaseName!);
+            this.ActiveDatabase = _databaseService.ActiveDatabase;
         }
         catch (Exception e)
         {
@@ -416,7 +423,7 @@ public partial class MainViewModel : ObservableObject
     public bool CanConnectDatabase => this.SelectedDatabaseConfig != null && !this.HasActiveDatabase;
 
     [RelayCommand(CanExecute = nameof(CanDisconnectDatabase))]
-    public void DisconnectDatabase()
+    private void DisconnectDatabase()
     {
         if (this.ActiveDatabase == null)
         {
@@ -425,8 +432,7 @@ public partial class MainViewModel : ObservableObject
 
         try
         {
-            this.ActiveDatabase.Disconnect();
-            this.ActiveDatabase.Dispose();
+            _databaseService.DisconnectFromDatabase();
             this.ActiveDatabase = null;
         }
         catch (Exception e)
@@ -470,32 +476,9 @@ public partial class MainViewModel : ObservableObject
             {
                 Application.Current.Dispatcher.Invoke(() => this.IsRunningScript = true);
 
-                Transaction? transaction = this.StartTransaction
-                                               ? db.BeginTransaction(IsolationLevel.ReadUncommitted)
-                                               : null;
+                _databaseService.ExecuteSql(sql, this.StartTransaction, this.CommitTransaction);
 
-                using var command = new SqlCommand(sql);
-                command.Execute(db);
-
-                var result = (data: (DataTable?)null, affected: (int?)0);
-
-                if (command.ResultReader != null)
-                {
-                    DataTable data = new();
-                    data.Load(command.ResultReader);
-                    result.data = data;
-                }
-                else
-                {
-                    result.affected = command.AffectedRows;
-                }
-
-                if (this.CommitTransaction)
-                {
-                    transaction?.Commit();
-                }
-
-                return result;
+                return (data: _databaseService.LastData, affected: _databaseService.LastAffectedRows);
             }
             finally
             {
@@ -525,8 +508,7 @@ public partial class MainViewModel : ObservableObject
                 resultViewModel.Statement = sql;
                 resultViewModel.Data = res.data;
 
-                var nav = Dependencies.Get<INavigationService>()!;
-                nav.Navigate(resultViewModel, this);
+                _navigationService.Navigate(resultViewModel, this);
             }
             else if (res.affected > 0)
             {
@@ -570,6 +552,7 @@ public partial class MainViewModel : ObservableObject
 
         this.PreflightCheckPassed = false;
         this.PreflightCheckCommand.NotifyCanExecuteChanged();
+        this.UploadCommand.NotifyCanExecuteChanged();
     }
 
     [RelayCommand]
@@ -577,6 +560,7 @@ public partial class MainViewModel : ObservableObject
     {
         this.UploadItems.Remove(item);
         this.PreflightCheckCommand.NotifyCanExecuteChanged();
+        this.UploadCommand.NotifyCanExecuteChanged();
     }
 
     [RelayCommand(CanExecute = nameof(CanExecutePreflightCheck))]
@@ -606,7 +590,7 @@ public partial class MainViewModel : ObservableObject
         {
             foreach (UploadItem uploadItem in this.UploadItems)
             {
-                uploadItem.Validate(this.ValidateUniqueRelease, this.ValidateUpload);
+                uploadItem.Validate(this.ValidateRelease, this.ValidateUpload);
             }
         }
 
@@ -625,11 +609,14 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    private ValidationResult ValidateUniqueRelease(ReleaseConfigViewModel? release)
+    private ValidationResult ValidateRelease(ReleaseConfigViewModel? release)
     {
-        return this.UploadItems.Count(x => Equals(x.Release?.Name, release?.Name)) > 1
-                   ? new ValidationResult(ValidationMessages.MultipleReferences)
-                   : ValidationResult.Success!;
+        if (this.UploadItems.Count(x => Equals(x.Release?.Name, release?.Name)) > 1)
+        {
+            return new ValidationResult(ValidationMessages.MultipleReferences);
+        }
+
+        return ValidationResult.Success!;
     }
 
     private ValidationResult ValidateUpload(Guid guid)
@@ -639,11 +626,8 @@ public partial class MainViewModel : ObservableObject
             UploadItem uploadItem = this.UploadItems.First(x => x.Id == guid);
 
             Application.Current.Dispatcher.Invoke(() => this.IsRunningScript = true);
+
             return this.ExecuteUploadStatement(uploadItem);
-        }
-        catch (Exception e)
-        {
-            return new ValidationResult(e.Message);
         }
         finally
         {
@@ -657,36 +641,22 @@ public partial class MainViewModel : ObservableObject
         DatabaseConfigViewModel dbConfig
             = this.Databases.First(x => string.Equals(x.Host, release.DatabaseHost, StringComparison.InvariantCultureIgnoreCase));
 
-        using SqlDatabase db = new SqlDatabase(dbConfig.Settings!);
-
         try
         {
-            db.Connect(release.DatabaseName!);
-            db.BeginTransaction(IsolationLevel.ReadUncommitted);
-
             string sql = File.ReadAllText(uploadItem.FilePath!);
-            using var command = new SqlCommand(sql);
-            command.Execute(db);
 
-            int resultCount = 0;
-
-            if (command.ResultReader != null)
-            {
-                DataTable data = new();
-                data.Load(command.ResultReader);
-                resultCount = data.Rows.Count;
-            }
-            else
-            {
-                resultCount = command.AffectedRows.GetValueOrDefault();
-            }
+            _databaseService.ConnectToDatabase(dbConfig.Settings!, release.DatabaseName!);
+            _databaseService.ExecuteSql(sql);
 
             return ValidationResult.Success!;
         }
+        catch (Exception e)
+        {
+            return new ValidationResult(e.Message);
+        }
         finally
         {
-            db.CloseTransaction();
-            db.Disconnect();
+            _databaseService.DisconnectFromDatabase();
         }
     }
 
