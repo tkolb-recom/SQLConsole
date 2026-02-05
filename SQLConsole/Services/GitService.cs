@@ -1,3 +1,5 @@
+using Microsoft.Alm.Authentication;
+
 namespace Recom.SQLConsole.Services;
 
 /// <remarks>
@@ -399,6 +401,28 @@ public class GitService : IGitService
 
                    if (credentials.Method == GitAuthMethod.UsernamePassword)
                    {
+                       return new UsernamePasswordCredentials
+                       {
+                           Username = credentials.Username ?? usernameFromUrl,
+                           Password = credentials.Password ?? string.Empty
+                       };
+                   }
+
+                   if (credentials.Method == GitAuthMethod.CredentialManager)
+                   {
+                       if (credentials.Username == null && credentials.Password == null)
+                       {
+                           // Retrieve credentials from Git Credential Manager
+                           var secrets = new SecretStore("git");
+                           var auth = new BasicAuthentication(secrets);
+                           Credential? fromStore = auth.GetCredentials(new TargetUri("https://github.com"));
+                           if (fromStore != null)
+                           {
+                               credentials.Username = fromStore.Username;
+                               credentials.Password = fromStore.Password;
+                           }
+                       }
+
                        return new UsernamePasswordCredentials
                        {
                            Username = credentials.Username ?? usernameFromUrl,

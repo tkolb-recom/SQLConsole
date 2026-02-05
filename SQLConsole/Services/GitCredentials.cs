@@ -4,8 +4,7 @@ public enum GitAuthMethod
 {
     None,
     UsernamePassword,
-    SshAgent,
-    SshPrivateKey
+    CredentialManager
 }
 
 public class GitCredentials
@@ -15,14 +14,4 @@ public class GitCredentials
     // For Username/Password
     public string? Username { get; set; }
     public string? Password { get; set; }
-
-    // For SSH
-    public string? SshPrivateKeyPath { get; set; }
-    public string? SshPassphrase { get; set; }
-
-    // Optional: allow specifying username for ssh
-    public string? SshUsername { get; set; }
-
-    // If true, attempt to use SSH agent
-    public bool UseAgent { get; set; }
 }

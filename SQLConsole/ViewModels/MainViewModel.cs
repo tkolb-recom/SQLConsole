@@ -673,6 +673,8 @@ public partial class MainViewModel : ObservableObject
         string repo = Settings.Default.RepositoryPath!;
         _gitService.UseSignatureFromConfig(repo);
 
+        GitCredentials credentials = new GitCredentials { Method = GitAuthMethod.CredentialManager };
+
         try
         {
             foreach (UploadItem uploadItem in this.UploadItems)
@@ -684,13 +686,13 @@ public partial class MainViewModel : ObservableObject
                 string targetFile = Path.Combine(repo, fileName);
 
                 await _gitService.CheckoutBranchAsync(repo, branch, ct: ct);
-                await _gitService.PullAsync(repo, ct: ct);
+                await _gitService.PullAsync(repo, credentials, ct: ct);
 
                 File.Copy(sourceFile, targetFile, true);
 
                 await _gitService.AddFilesAsync(repo, [targetFile], ct: ct);
                 await _gitService.CommitAsync(repo, $"Upload {fileName}", ct: ct);
-                await _gitService.PushAsync(repo, ct: ct);
+                await _gitService.PushAsync(repo, credentials, ct: ct);
             }
         }
         catch (Exception e)
