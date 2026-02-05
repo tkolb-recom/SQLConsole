@@ -323,7 +323,8 @@
                                     SelectedItem="{Binding Release, UpdateSourceTrigger=PropertyChanged}"
                                     DisplayMember="Name"
                                     CausesValidation="True"
-                                    AlwaysShowLabelAtTop="True" Label="Release">
+                                    AlwaysShowLabelAtTop="True" Label="Release"
+                                    Margin="0 0 0 5">
 
                                     <dxe:ComboBoxEdit.Buttons>
                                         <dxe:ButtonInfo
@@ -333,7 +334,7 @@
                                             GlyphKind="Minus" />
                                     </dxe:ComboBoxEdit.Buttons>
                                 </dxe:ComboBoxEdit>
-                                <dxe:BrowsePathEdit Margin="0 5"
+                                <dxe:BrowsePathEdit Margin="0 0 0 5"
                                                     AlwaysShowLabelAtTop="True" Label="SQL Datei"
                                                     DialogType="FileOpen"
                                                     DialogFilter="{Binding DataContext.SqlFilterString, RelativeSource={RelativeSource AncestorType={x:Type RibbonWindow}}}"
@@ -342,6 +343,13 @@
                                                     ValidateOnEnterKeyPressed="True"
                                                     CausesValidation="True"
                                                     ToolTip="{Binding FilePath}" />
+                                <Border BorderBrush="Red" BorderThickness="1"
+                                        Background="Tomato" CornerRadius="5"
+                                        Margin="0 0 0 5" Padding="3"
+                                        Visibility="{Binding HasErrors, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <TextBlock Text="{Binding GeneralError}"
+                                               Foreground="White" />
+                                </Border>
                                 <Separator Margin="0 3 0 0" />
                             </StackPanel>
                         </DataTemplate>

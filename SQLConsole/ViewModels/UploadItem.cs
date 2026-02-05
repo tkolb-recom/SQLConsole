@@ -10,6 +10,8 @@ public partial class UploadItem : ObservableValidator
     [CustomValidation(typeof(UploadItem), nameof(ValidateUploadIsExecutable))]
     public Guid Id { get; private init; } = Guid.NewGuid();
 
+    public string GeneralError => string.Join("\n", this.GetErrors().Select(x => x.ErrorMessage));
+
     [ObservableProperty]
     [NotifyDataErrorInfo]
     [CustomValidation(typeof(UploadItem), nameof(ValidateUniquity))]
@@ -36,6 +38,8 @@ public partial class UploadItem : ObservableValidator
 
         _validateRelease = null;
         _validateUpload = null;
+
+        this.OnPropertyChanged(nameof(this.GeneralError));
 
         return this.HasErrors;
     }
