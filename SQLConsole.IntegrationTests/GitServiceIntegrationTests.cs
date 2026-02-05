@@ -1,33 +1,33 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
-using Recom.SQLConsole.DI;
 using Recom.SQLConsole.Services;
 
 namespace SQLConsole.IntegrationTests;
 
 public class GitServiceIntegrationTests : IDisposable
 {
-    private readonly string _baseTemp;
+    private readonly string _localTemp;
     private readonly IGitService _gitService;
 
     public GitServiceIntegrationTests()
     {
-        _baseTemp = Path.Combine(Path.GetTempPath(), "sqlconsole_git_integration_tests", Guid.NewGuid().ToString());
-        Directory.CreateDirectory(_baseTemp);
+        _localTemp = Path.Combine(Path.GetTempPath(), "sqlconsole_git_integration_tests", Guid.NewGuid().ToString());
+        Directory.CreateDirectory(_localTemp);
 
-        // Verwende die konkrete Implementierung direkt
         _gitService = new GitService();
+        _gitService.UseSignature("Tester", "tester@example.local");
     }
 
     [Fact]
     public async Task Clone_Add_Commit_Push_Pull_Workflow()
     {
-        var remoteBare = Path.Combine(_baseTemp, "remote.git");
-        var cloneA = Path.Combine(_baseTemp, "cloneA");
-        var cloneB = Path.Combine(_baseTemp, "cloneB");
+        string remoteBare = Path.Combine(_localTemp, "remote.git");
+        string cloneA = Path.Combine(_localTemp, "cloneA");
+        string cloneB = Path.Combine(_localTemp, "cloneB");
 
         // 1) Init bare remote
         await _gitService.InitializeRepositoryAsync(remoteBare, bare: true);
@@ -36,26 +36,26 @@ public class GitServiceIntegrationTests : IDisposable
         await _gitService.CloneAsync(remoteBare, cloneA);
 
         // 3) Create a file, add, commit
-        var filePath = Path.Combine(cloneA, "README.md");
+        string filePath = Path.Combine(cloneA, "README.md");
         await File.WriteAllTextAsync(filePath, "Hello from cloneA\n");
-        await _gitService.AddFilesAsync(cloneA, new[] { "README.md" });
-        var sha = await _gitService.CommitAsync(cloneA, "Add README", "Tester", "tester@example.local");
+        await _gitService.AddFilesAsync(cloneA, ["README.md"]);
+        string? sha = await _gitService.CommitAsync(cloneA, "Add README");
         Assert.False(string.IsNullOrEmpty(sha));
 
         // 4) Push to remote
-        var pushResult = await _gitService.PushAsync(cloneA);
+        PushResultInfo pushResult = await _gitService.PushAsync(cloneA);
         Assert.True(pushResult.Success, pushResult.Message ?? "Push failed");
 
         // 5) CloneB and pull
         await _gitService.CloneAsync(remoteBare, cloneB);
 
         // Initially no local modifications in cloneB
-        var statusB = (await _gitService.GetStatusAsync(cloneB)).ToList();
+        List<string> statusB = (await _gitService.GetStatusAsync(cloneB)).ToList();
         Assert.Empty(statusB);
 
-        var readmeB = Path.Combine(cloneB, "README.md");
+        string readmeB = Path.Combine(cloneB, "README.md");
         Assert.True(File.Exists(readmeB));
-        var content = await File.ReadAllTextAsync(readmeB);
+        string content = await File.ReadAllTextAsync(readmeB);
         Assert.Contains("Hello from cloneA", content);
     }
 
@@ -63,8 +63,10 @@ public class GitServiceIntegrationTests : IDisposable
     {
         try
         {
-            if (Directory.Exists(_baseTemp))
-                Directory.Delete(_baseTemp, true);
+            if (Directory.Exists(_localTemp))
+            {
+                Directory.Delete(_localTemp, true);
+            }
         }
         catch
         {

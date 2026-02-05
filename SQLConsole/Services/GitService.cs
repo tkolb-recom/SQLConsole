@@ -1,8 +1,27 @@
 namespace Recom.SQLConsole.Services;
 
+/// <remarks>
+///     Implementierung mit LibGit2Sharp
+/// </remarks>
 public class GitService : IGitService
 {
-    // Klare, einfache Implementierung mit LibGit2Sharp
+    private Signature? _author = null!;
+    private Signature? _committer = null!;
+
+    public void UseSignatureFromConfig(string repositoryPath)
+    {
+        using var repo = new Repository(repositoryPath);
+
+        // Retrieve the author signature from Git config
+        _author = repo.Config.BuildSignature(DateTimeOffset.Now);
+        _committer = _author; // Typically same as author
+    }
+
+    public void UseSignature(string name, string email)
+    {
+        _author = new Signature(name, email, DateTimeOffset.Now);
+        _committer = _author;
+    }
 
     public async Task InitializeRepositoryAsync(string path, bool bare = false, CancellationToken ct = default)
     {
@@ -23,7 +42,9 @@ public class GitService : IGitService
     }
 
     public async Task CloneAsync(
-        string sourceUrl, string targetPath, GitCredentials? credentials = null, string? branch = null, CancellationToken ct = default)
+        string sourceUrl, string targetPath,
+        GitCredentials? credentials = null, string? branch = null,
+        CancellationToken ct = default)
     {
         await Task.Run(Clone, ct).ConfigureAwait(false);
         return;
@@ -32,17 +53,25 @@ public class GitService : IGitService
         {
             try
             {
-                var co = new CloneOptions();
-                if (!string.IsNullOrEmpty(branch)) co.BranchName = branch;
-
-                co.IsBare = false;
-                co.FetchOptions.CredentialsProvider = this.BuildCredentialsHandler(credentials);
+                var co = new CloneOptions
+                {
+                    IsBare = false,
+                    BranchName = !string.IsNullOrWhiteSpace(branch) ? branch : null,
+                    FetchOptions =
+                    {
+                        CredentialsProvider = this.BuildCredentialsHandler(credentials)
+                    }
+                };
 
                 Repository.Clone(sourceUrl, targetPath, co);
             }
-            catch (LibGit2Sharp.LibGit2SharpException ex)
+            catch (LibGit2SharpException ex)
             {
-                if (ex.Message.Contains("authentication", StringComparison.OrdinalIgnoreCase) || ex.Message.Contains("auth", StringComparison.OrdinalIgnoreCase)) throw new GitAuthException("Authentifizierungsfehler beim Klonen.", ex);
+                if (ex.Message.Contains("authentication", StringComparison.OrdinalIgnoreCase)
+                    || ex.Message.Contains("auth", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new GitAuthException("Authentifizierungsfehler beim Klonen.", ex);
+                }
 
                 throw new GitServiceException("Fehler beim Klonen des Repositories.", ex);
             }
@@ -62,7 +91,10 @@ public class GitService : IGitService
         {
             try
             {
-                if (!Repository.IsValid(repositoryPath)) throw new GitRepositoryNotFoundException($"Kein gültiges Git-Repository unter '{repositoryPath}' gefunden.");
+                if (!Repository.IsValid(repositoryPath))
+                {
+                    throw new GitRepositoryNotFoundException($"Kein gültiges Git-Repository unter '{repositoryPath}' gefunden.");
+                }
 
                 using var repo = new Repository(repositoryPath);
                 Commands.Stage(repo, filePaths);
@@ -74,8 +106,7 @@ public class GitService : IGitService
         }
     }
 
-    public async Task<string?> CommitAsync(
-        string repositoryPath, string message, string authorName, string authorEmail, CancellationToken ct = default)
+    public async Task<string?> CommitAsync(string repositoryPath, string message, CancellationToken ct = default)
     {
         return await Task.Run(Commit, ct).ConfigureAwait(false);
 
@@ -83,17 +114,25 @@ public class GitService : IGitService
         {
             try
             {
-                if (!Repository.IsValid(repositoryPath)) throw new GitRepositoryNotFoundException($"Kein gültiges Git-Repository unter '{repositoryPath}' gefunden.");
+                if (!Repository.IsValid(repositoryPath))
+                {
+                    throw new GitRepositoryNotFoundException($"Kein gültiges Git-Repository unter '{repositoryPath}' gefunden.");
+                }
 
                 using var repo = new Repository(repositoryPath);
                 // Prüfen, ob es Änderungen gibt
-                var status = repo.RetrieveStatus(new StatusOptions());
-                if (!status.IsDirty) return null; // keine Änderungen zum Committieren
+                RepositoryStatus? status = repo.RetrieveStatus(new StatusOptions());
+                if (!status.IsDirty)
+                {
+                    return null; // keine Änderungen für Commit
+                }
 
-                var author = new Signature(authorName, authorEmail, DateTimeOffset.Now);
-                var committer = author;
+                if (_author == null)
+                {
+                    this.UseSignatureFromConfig(repositoryPath);
+                }
 
-                var commit = repo.Commit(message, author, committer);
+                Commit? commit = repo.Commit(message, _author, _committer);
                 return commit.Sha;
             }
             catch (Exception ex) when (ex is not GitServiceException)
@@ -104,7 +143,8 @@ public class GitService : IGitService
     }
 
     public async Task<PushResultInfo> PushAsync(
-        string repositoryPath, GitCredentials? credentials = null, string remoteName = "origin", string? branchName = null,
+        string repositoryPath, GitCredentials? credentials = null,
+        string remoteName = "origin", string? branchName = null,
         CancellationToken ct = default)
     {
         return await Task.Run(Push, ct).ConfigureAwait(false);
@@ -113,16 +153,22 @@ public class GitService : IGitService
         {
             try
             {
-                if (!Repository.IsValid(repositoryPath)) throw new GitRepositoryNotFoundException($"Kein gültiges Git-Repository unter '{repositoryPath}' gefunden.");
+                if (!Repository.IsValid(repositoryPath))
+                {
+                    throw new GitRepositoryNotFoundException($"Kein gültiges Git-Repository unter '{repositoryPath}' gefunden.");
+                }
 
                 using var repo = new Repository(repositoryPath);
-                var pushOptions = new PushOptions { CredentialsProvider = this.BuildCredentialsHandler(credentials) };
+                var pushOptions = new PushOptions
+                {
+                    CredentialsProvider = this.BuildCredentialsHandler(credentials)
+                };
 
-                var remote = repo.Network.Remotes[remoteName] ?? throw new GitServiceException($"Remote '{remoteName}' nicht gefunden.");
+                Remote remote = repo.Network.Remotes[remoteName] ?? throw new GitServiceException($"Remote '{remoteName}' nicht gefunden.");
 
-                var pushRefSpec = branchName ?? repo.Head.FriendlyName;
+                string? pushRefSpec = branchName ?? repo.Head.FriendlyName;
                 // Erzeuge RefSpec für das Pushen
-                var refSpec = $"refs/heads/{pushRefSpec}:refs/heads/{pushRefSpec}";
+                string refSpec = $"refs/heads/{pushRefSpec}:refs/heads/{pushRefSpec}";
 
                 var resultInfo = new PushResultInfo { Success = true };
 
@@ -130,19 +176,21 @@ public class GitService : IGitService
                 {
                     repo.Network.Push(remote, refSpec, pushOptions);
                 }
-                catch (LibGit2Sharp.NonFastForwardException nf)
+                catch (NonFastForwardException nf)
                 {
                     // Remote hat fortgeschrittene commits
                     resultInfo.Success = false;
                     resultInfo.Message = "Push abgelehnt (Non-Fast-Forward). Bitte zuerst pull und merge.";
-                    resultInfo.RejectedRefs = new[] { refSpec };
+                    resultInfo.RejectedRefs = [refSpec];
                 }
 
                 return resultInfo;
             }
-            catch (LibGit2Sharp.LibGit2SharpException ex)
+            catch (LibGit2SharpException ex)
             {
-                if (ex.Message.Contains("authentication", StringComparison.OrdinalIgnoreCase) || ex.Message.Contains("auth", StringComparison.OrdinalIgnoreCase)) throw new GitAuthException("Authentifizierungsfehler beim Push.", ex);
+                if (ex.Message.Contains("authentication", StringComparison.OrdinalIgnoreCase) ||
+                    ex.Message.Contains("auth", StringComparison.OrdinalIgnoreCase))
+                    throw new GitAuthException("Authentifizierungsfehler beim Push.", ex);
 
                 throw new GitNetworkException("Netzwerkfehler beim Push.", ex);
             }
@@ -154,7 +202,8 @@ public class GitService : IGitService
     }
 
     public async Task<PullResultInfo> PullAsync(
-        string repositoryPath, GitCredentials? credentials = null, string remoteName = "origin", string? branchName = null,
+        string repositoryPath, GitCredentials? credentials = null,
+        string remoteName = "origin", string? branchName = null,
         CancellationToken ct = default)
     {
         return await Task.Run(Pull, ct).ConfigureAwait(false);
@@ -163,34 +212,46 @@ public class GitService : IGitService
         {
             try
             {
-                if (!Repository.IsValid(repositoryPath)) throw new GitRepositoryNotFoundException($"Kein gültiges Git-Repository unter '{repositoryPath}' gefunden.");
+                if (!Repository.IsValid(repositoryPath))
+                {
+                    throw new GitRepositoryNotFoundException($"Kein gültiges Git-Repository unter '{repositoryPath}' gefunden.");
+                }
 
                 using var repo = new Repository(repositoryPath);
 
-                var remote = repo.Network.Remotes[remoteName] ?? throw new GitServiceException($"Remote '{remoteName}' nicht gefunden.");
+                Remote remote = repo.Network.Remotes[remoteName] ?? throw new GitServiceException($"Remote '{remoteName}' nicht gefunden.");
 
-                var fetchOptions = new FetchOptions { CredentialsProvider = this.BuildCredentialsHandler(credentials) };
+                var fetchOptions = new FetchOptions
+                {
+                    CredentialsProvider = this.BuildCredentialsHandler(credentials)
+                };
 
-                var branchToPull = branchName ?? repo.Head.FriendlyName;
+                string? branchToPull = branchName ?? repo.Head.FriendlyName;
                 // Hole die Daten
-                Commands.Fetch(repo, remote.Name, new[] { $"refs/heads/{branchToPull}:refs/remotes/{remote.Name}/{branchToPull}" }, fetchOptions, null);
+                Commands.Fetch(repo, remote.Name, [$"refs/heads/{branchToPull}:refs/remotes/{remote.Name}/{branchToPull}"], fetchOptions,
+                    null);
 
                 // Versuche Merge
-                var remoteBranchRef = repo.Branches[$"{remote.Name}/{branchToPull}"];
-                if (remoteBranchRef == null) return new PullResultInfo { Success = false, Message = "Remote-Branch nicht gefunden." };
+                Branch? remoteBranchRef = repo.Branches[$"{remote.Name}/{branchToPull}"];
+                if (remoteBranchRef == null)
+                {
+                    return new PullResultInfo { Success = false, Message = "Remote-Branch nicht gefunden." };
+                }
 
-                var mergeResult = repo.Merge(remoteBranchRef, new Signature("SQLConsole", "noreply@sqlconsole.local", DateTimeOffset.Now));
+                MergeResult? mergeResult = repo.Merge(remoteBranchRef,
+                    new Signature("SQLConsole", "noreply@sqlconsole.local", DateTimeOffset.Now));
 
                 var pullInfo = new PullResultInfo();
                 if (mergeResult.Status == MergeStatus.Conflicts)
                 {
                     var conflicts = new List<string>();
-                    foreach (var c in repo.Index.Conflicts)
+                    foreach (Conflict? c in repo.Index.Conflicts)
                     {
                         if (c.Ours != null) conflicts.Add(c.Ours.Path);
                         else if (c.Theirs != null) conflicts.Add(c.Theirs.Path);
                         else if (c.Ancestor != null) conflicts.Add(c.Ancestor.Path);
                     }
+
                     conflicts = conflicts.Distinct().ToList();
                     pullInfo.Success = false;
                     pullInfo.HasConflicts = true;
@@ -205,9 +266,13 @@ public class GitService : IGitService
 
                 return pullInfo;
             }
-            catch (LibGit2Sharp.LibGit2SharpException ex)
+            catch (LibGit2SharpException ex)
             {
-                if (ex.Message.Contains("authentication", StringComparison.OrdinalIgnoreCase) || ex.Message.Contains("auth", StringComparison.OrdinalIgnoreCase)) throw new GitAuthException("Authentifizierungsfehler beim Pull.", ex);
+                if (ex.Message.Contains("authentication", StringComparison.OrdinalIgnoreCase)
+                    || ex.Message.Contains("auth", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new GitAuthException("Authentifizierungsfehler beim Pull.", ex);
+                }
 
                 throw new GitNetworkException("Netzwerkfehler beim Pull.", ex);
             }
@@ -230,11 +295,14 @@ public class GitService : IGitService
         {
             try
             {
-                if (!Repository.IsValid(repositoryPath)) throw new GitRepositoryNotFoundException($"Kein gültiges Git-Repository unter '{repositoryPath}' gefunden.");
+                if (!Repository.IsValid(repositoryPath))
+                {
+                    throw new GitRepositoryNotFoundException($"Kein gültiges Git-Repository unter '{repositoryPath}' gefunden.");
+                }
 
                 using var repo = new Repository(repositoryPath);
-                var status = repo.RetrieveStatus(new StatusOptions());
-                var paths = status.Select(s => s.FilePath).ToList();
+                RepositoryStatus? status = repo.RetrieveStatus(new StatusOptions());
+                List<string> paths = status.Select(s => s.FilePath).ToList();
                 return paths.AsEnumerable();
             }
             catch (Exception ex) when (ex is not GitServiceException)
@@ -244,22 +312,32 @@ public class GitService : IGitService
         }
     }
 
-    public async Task CheckoutBranchAsync(string repositoryPath, string branchName, string remoteName = "origin", bool createLocalIfMissing = true, CancellationToken ct = default)
+    public async Task CheckoutBranchAsync(
+        string repositoryPath, string branchName, string remoteName = "origin", bool createLocalIfMissing = true,
+        CancellationToken ct = default)
     {
-        await Task.Run(() =>
+        await Task.Run(CheckOut, ct).ConfigureAwait(false);
+
+        return;
+
+        void CheckOut()
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(branchName))
+                {
                     throw new GitServiceException("Branch-Name darf nicht leer sein.");
+                }
 
                 if (!Repository.IsValid(repositoryPath))
+                {
                     throw new GitRepositoryNotFoundException($"Kein gültiges Git-Repository unter '{repositoryPath}' gefunden.");
+                }
 
                 using var repo = new Repository(repositoryPath);
 
                 // Prüfe auf existierenden lokalen Branch
-                var local = repo.Branches[branchName];
+                Branch? local = repo.Branches[branchName];
                 if (local != null)
                 {
                     Commands.Checkout(repo, local);
@@ -267,11 +345,11 @@ public class GitService : IGitService
                 }
 
                 // Prüfe auf vorhandenen Remote-Branch
-                var remoteBranch = repo.Branches[$"{remoteName}/{branchName}"];
+                Branch? remoteBranch = repo.Branches[$"{remoteName}/{branchName}"];
                 if (remoteBranch != null)
                 {
                     // Erstelle lokalen Branch vom Remote-Tip und checke aus
-                    var newBranch = repo.CreateBranch(branchName, remoteBranch.Tip);
+                    Branch? newBranch = repo.CreateBranch(branchName, remoteBranch.Tip);
                     // Optional: setze Tracking-Informationen (falls unterstützt)
                     try
                     {
@@ -288,17 +366,20 @@ public class GitService : IGitService
 
                 if (createLocalIfMissing)
                 {
-                    var created = repo.CreateBranch(branchName);
+                    Branch? created = repo.CreateBranch(branchName);
                     Commands.Checkout(repo, created);
                     return;
                 }
 
                 throw new GitServiceException($"Branch '{branchName}' nicht gefunden (weder lokal noch auf Remote '{remoteName}').");
             }
-            catch (LibGit2Sharp.LibGit2SharpException ex)
+            catch (LibGit2SharpException ex)
             {
-                if (ex.Message.Contains("authentication", StringComparison.OrdinalIgnoreCase) || ex.Message.Contains("auth", StringComparison.OrdinalIgnoreCase))
+                if (ex.Message.Contains("authentication", StringComparison.OrdinalIgnoreCase) ||
+                    ex.Message.Contains("auth", StringComparison.OrdinalIgnoreCase))
+                {
                     throw new GitAuthException("Authentifizierungsfehler beim Wechseln des Branches.", ex);
+                }
 
                 throw new GitServiceException("Fehler beim Wechseln des Branches.", ex);
             }
@@ -306,7 +387,7 @@ public class GitService : IGitService
             {
                 throw new GitServiceException("Fehler beim Wechseln des Branches.", ex);
             }
-        }, ct).ConfigureAwait(false);
+        }
     }
 
     private CredentialsHandler BuildCredentialsHandler(GitCredentials? credentials)

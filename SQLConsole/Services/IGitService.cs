@@ -7,6 +7,19 @@ namespace Recom.SQLConsole.Services;
 public interface IGitService
 {
     /// <summary>
+    /// Reads the signature from the git config file for further use.
+    /// </summary>
+    /// <param name="repositoryPath"></param>
+    void UseSignatureFromConfig(string repositoryPath);
+
+    /// <summary>
+    /// Sets the signature to be used for commits.
+    /// </summary>
+    /// <param name="name">Name of the author and committer.</param>
+    /// <param name="email">EMail of the author and committer.</param>
+    void UseSignature(string name, string email);
+
+    /// <summary>
     /// Clone a remote repository into a local target directory.
     /// </summary>
     /// <param name="sourceUrl">URL or path of the source repository (e.g. "https://..." or local path).</param>
@@ -29,11 +42,13 @@ public interface IGitService
     /// </summary>
     /// <param name="repositoryPath">Path to the local Git repository.</param>
     /// <param name="message">Commit message.</param>
-    /// <param name="authorName">Author name.</param>
-    /// <param name="authorEmail">Author email.</param>
     /// <param name="ct">Cancellation token to support operation cancellation.</param>
     /// <returns>The SHA of the created commit, or null if there were no changes to commit.</returns>
-    Task<string?> CommitAsync(string repositoryPath, string message, string authorName, string authorEmail, CancellationToken ct = default);
+    /// <remarks>
+    /// Author information is read from the git config file by default.
+    /// Override author if needed using <see cref="UseSignature"/>.
+    /// </remarks>
+    Task<string?> CommitAsync(string repositoryPath, string message, CancellationToken ct = default);
 
     /// <summary>
     /// Push local commits to a remote.
@@ -58,10 +73,12 @@ public interface IGitService
     Task<PullResultInfo> PullAsync(string repositoryPath, GitCredentials? credentials = null, string remoteName = "origin", string? branchName = null, CancellationToken ct = default);
 
     /// <summary>
-    /// Checkout the specified branch. If the local branch exists, switch to it. If it does not exist and a remote branch exists, create a local branch from the remote branch tip and checkout it. If <paramref name="createLocalIfMissing"/> is true, a new local branch will be created from the current HEAD when no remote branch exists.
+    /// Check out the specified branch. If the local branch exists, switch to it.
+    /// If it does not exist and a remote branch exists, create a local branch from the remote branch tip and check it out.
+    /// If <paramref name="createLocalIfMissing"/> is true, a new local branch will be created from the current HEAD when no remote branch exists.
     /// </summary>
     /// <param name="repositoryPath">Path to the local Git repository.</param>
-    /// <param name="branchName">Branch name to checkout.</param>
+    /// <param name="branchName">Branch name to check out.</param>
     /// <param name="remoteName">Remote name to look for a remote branch (default: "origin").</param>
     /// <param name="createLocalIfMissing">If true, create a local branch from HEAD when neither local nor remote branch exists.</param>
     /// <param name="ct">Cancellation token to support operation cancellation.</param>
