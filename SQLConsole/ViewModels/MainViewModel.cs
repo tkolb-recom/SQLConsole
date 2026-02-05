@@ -77,7 +77,7 @@ public partial class MainViewModel : ObservableObject
 
             if (this.QueryDocument?.FileName != null)
             {
-                title += " - " + Path.GetFileName((string?)this.QueryDocument?.FileName);
+                title += " - " + Path.GetFileName(this.QueryDocument?.FileName);
             }
 
             if (this.DocumentHasChanges)
@@ -276,7 +276,7 @@ public partial class MainViewModel : ObservableObject
                        ? field = new FontFamily(this.SelectedFont)
                        : field;
         }
-    }
+    } = null!;
 
     public ObservableCollection<double> AvailableFontSizes { get; }
         = [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24];
@@ -448,7 +448,7 @@ public partial class MainViewModel : ObservableObject
     public bool CanDisconnectDatabase => this.HasActiveDatabase && !this.IsRunningScript;
 
     [RelayCommand(CanExecute = nameof(CanRunScript))]
-    public void RunScript()
+    public async Task RunScriptAsync(CancellationToken ct = default)
     {
         if (this.ActiveDatabase == null || this.QueryDocument == null)
         {
@@ -457,7 +457,7 @@ public partial class MainViewModel : ObservableObject
 
         try
         {
-            this.ExecuteStatementAsync();
+            await this.ExecuteStatementAsync();
         }
         catch (Exception e)
         {
@@ -465,12 +465,12 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    private void ExecuteStatementAsync()
+    private async Task ExecuteStatementAsync()
     {
         string sql = this.QueryDocument!.Text;
         SqlDatabase db = this.ActiveDatabase!;
 
-        Task.Run(ExecuteStatement).ContinueWith(DisplayResult, TaskScheduler.FromCurrentSynchronizationContext());
+        await Task.Run(ExecuteStatement).ContinueWith(DisplayResult, TaskScheduler.FromCurrentSynchronizationContext());
 
         return;
 
@@ -478,7 +478,7 @@ public partial class MainViewModel : ObservableObject
         {
             try
             {
-                Application.Current.Dispatcher.Invoke<bool>(() => this.IsRunningScript = true);
+                Application.Current.Dispatcher.Invoke(() => this.IsRunningScript = true);
 
                 _databaseService.ExecuteSql(sql, this.StartTransaction, this.CommitTransaction);
 
@@ -491,7 +491,7 @@ public partial class MainViewModel : ObservableObject
                     db.CloseTransaction();
                 }
 
-                Application.Current.Dispatcher.Invoke<bool>(() => this.IsRunningScript = false);
+                Application.Current.Dispatcher.Invoke(() => this.IsRunningScript = false);
             }
         }
 
@@ -549,7 +549,10 @@ public partial class MainViewModel : ObservableObject
         var uploadItem = new UploadItem
         {
             // select the first release not already in the list
-            Release = this.Releases.FirstOrDefault(x => !this.UploadItems.Select<UploadItem, ReleaseConfigViewModel?>(i => i.Release).Contains(x))
+            Release = this.Releases.FirstOrDefault(
+                x => !this.UploadItems.Select<UploadItem, ReleaseConfigViewModel?>(i => i.Release).Contains(x)),
+            // preselect the opened file
+            FilePath = this.QueryDocument?.FileName ?? string.Empty
         };
         this.UploadItems.Add(uploadItem);
         uploadItem.Validate();
@@ -568,13 +571,13 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand(CanExecute = nameof(CanExecutePreflightCheck))]
-    public void PreflightCheck()
+    public async Task PreflightCheck()
     {
         this.PreflightCheckPassed = false;
 
         try
         {
-            this.ExecuteValidationAsync();
+            await this.ExecuteValidationAsync();
         }
         catch (Exception e)
         {
@@ -584,9 +587,9 @@ public partial class MainViewModel : ObservableObject
 
     public bool CanExecutePreflightCheck => this.UploadItems.Any() && !this.IsRunningScript;
 
-    private void ExecuteValidationAsync()
+    private async Task ExecuteValidationAsync()
     {
-        Task.Run(Validate).ContinueWith(CheckErrors, TaskScheduler.FromCurrentSynchronizationContext());
+        await Task.Run(Validate).ContinueWith(CheckErrors, TaskScheduler.FromCurrentSynchronizationContext());
 
         return;
 
@@ -629,13 +632,13 @@ public partial class MainViewModel : ObservableObject
         {
             UploadItem uploadItem = this.UploadItems.First(x => x.Id == guid);
 
-            Application.Current.Dispatcher.Invoke<bool>(() => this.IsRunningScript = true);
+            Application.Current.Dispatcher.Invoke(() => this.IsRunningScript = true);
 
             return this.ExecuteUploadStatement(uploadItem);
         }
         finally
         {
-            Application.Current.Dispatcher.Invoke<bool>(() => this.IsRunningScript = false);
+            Application.Current.Dispatcher.Invoke(() => this.IsRunningScript = false);
         }
     }
 
@@ -665,8 +668,35 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand(CanExecute = nameof(PreflightCheckPassed))]
-    public void Upload()
+    public async Task UploadAsync(CancellationToken ct = default)
     {
+        string repo = Settings.Default.RepositoryPath!;
+        _gitService.UseSignatureFromConfig(repo);
+
+        try
+        {
+            foreach (UploadItem uploadItem in this.UploadItems)
+            {
+                string branch = uploadItem.Release!.RepositoryBranch!;
+
+                string sourceFile = uploadItem.FilePath!;
+                string fileName = Path.GetFileName(sourceFile);
+                string targetFile = Path.Combine(repo, fileName);
+
+                await _gitService.CheckoutBranchAsync(repo, branch, ct: ct);
+                await _gitService.PullAsync(repo, ct: ct);
+
+                File.Copy(sourceFile, targetFile, true);
+
+                await _gitService.AddFilesAsync(repo, [targetFile], ct: ct);
+                await _gitService.CommitAsync(repo, $"Upload {fileName}", ct: ct);
+                await _gitService.PushAsync(repo, ct: ct);
+            }
+        }
+        catch (Exception e)
+        {
+            MessageBox.Show(e.ToString(), "Fehler beim Hochladen", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     #endregion
