@@ -541,6 +541,10 @@ public partial class MainViewModel : ObservableObject
 
     public static string SqlFilterString => FilterStringConst;
 
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(UploadCommand))]
+    private string? _uploadCommitMessage;
+
     public ObservableCollection<UploadItem> UploadItems { get; } = new ObservableCollection<UploadItem>();
 
     [RelayCommand]
@@ -556,6 +560,12 @@ public partial class MainViewModel : ObservableObject
         };
         this.UploadItems.Add(uploadItem);
         uploadItem.Validate();
+
+        if (this.UploadItems.Count == 1)
+        {
+            string file = Path.GetFileName(uploadItem.FilePath);
+            this.UploadCommitMessage = $"Upload {file}";
+        }
 
         this.PreflightCheckPassed = false;
         this.PreflightCheckCommand.NotifyCanExecuteChanged();
@@ -610,6 +620,13 @@ public partial class MainViewModel : ObservableObject
                 return;
             }
 
+            if (string.IsNullOrWhiteSpace(this.UploadCommitMessage))
+            {
+                MessageBox.Show("Bitte eine Beschreibung für die zu veröffentlichenden Änderungen angeben.", "Vorflugkontrolle", MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                return;
+            }
+
             MessageBox.Show("Alle Prüfungen wurden abgeschlossen.", "Vorflugkontrolle", MessageBoxButton.OK, MessageBoxImage.Information);
 
             this.PreflightCheckPassed = this.UploadItems.All(x => !x.HasErrors);
@@ -632,9 +649,21 @@ public partial class MainViewModel : ObservableObject
         {
             UploadItem uploadItem = this.UploadItems.First(x => x.Id == guid);
 
+            string repoPath = Settings.Default.RepositoryPath!;
+            string fullPath = Path.GetFullPath(uploadItem.FilePath!);
+
+            if (fullPath.StartsWith(repoPath, StringComparison.InvariantCultureIgnoreCase))
+            {
+                return new ValidationResult("Die zu veröffentlichende Datei darf nicht bereits im Repository liegen.");
+            }
+
             Application.Current.Dispatcher.Invoke(() => this.IsRunningScript = true);
 
             return this.ExecuteUploadStatement(uploadItem);
+        }
+        catch (Exception e)
+        {
+            return new ValidationResult(e.Message);
         }
         finally
         {
@@ -667,9 +696,10 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    [RelayCommand(CanExecute = nameof(PreflightCheckPassed))]
+    [RelayCommand(CanExecute = nameof(CanExecuteUploadCommand))]
     public async Task UploadAsync(CancellationToken ct = default)
     {
+        string message = this.UploadCommitMessage!;
         string repo = Settings.Default.RepositoryPath!;
         _gitService.UseSignatureFromConfig(repo);
 
@@ -691,7 +721,7 @@ public partial class MainViewModel : ObservableObject
                 File.Copy(sourceFile, targetFile, true);
 
                 await _gitService.AddFilesAsync(repo, [targetFile], ct: ct);
-                await _gitService.CommitAsync(repo, $"Upload {fileName}", ct: ct);
+                await _gitService.CommitAsync(repo, message, ct: ct);
                 await _gitService.PushAsync(repo, credentials, ct: ct);
             }
         }
@@ -700,6 +730,9 @@ public partial class MainViewModel : ObservableObject
             MessageBox.Show(e.ToString(), "Fehler beim Hochladen", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
+
+    public bool CanExecuteUploadCommand => !string.IsNullOrWhiteSpace(this.UploadCommitMessage)
+                                           && this.PreflightCheckPassed;
 
     #endregion
 }

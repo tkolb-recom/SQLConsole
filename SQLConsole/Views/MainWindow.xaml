@@ -308,55 +308,66 @@
                                    Margin="5">
             </avalonedit:TextEditor>
 
-            <ScrollViewer Grid.Row="0" Grid.Column="0"
-                          BorderThickness="1" BorderBrush="DarkGray"
-                          Visibility="{Binding IsUploadVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
-                          Margin="5">
-                <ItemsControl ItemsSource="{Binding UploadItems}">
-                    <ItemsControl.ItemTemplate>
+            <Grid Grid.Row="0" Grid.Column="0"
+                  Visibility="{Binding IsUploadVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
-                        <DataTemplate DataType="{x:Type viewModels:UploadItem}">
-                            <StackPanel Orientation="Vertical"
-                                        Margin="5">
-                                <dxe:ComboBoxEdit
-                                    ItemsSource="{Binding DataContext.Releases, RelativeSource={RelativeSource AncestorType={x:Type RibbonWindow}}}"
-                                    SelectedItem="{Binding Release, UpdateSourceTrigger=PropertyChanged}"
-                                    DisplayMember="Name"
-                                    CausesValidation="True"
-                                    AlwaysShowLabelAtTop="True" Label="Release"
-                                    Margin="0 0 0 5">
+                <dxe:TextEdit Grid.Row="0" Margin="5 "
+                              AlwaysShowLabelAtTop="True" Label="Beschreibung"
+                              Text="{Binding UploadCommitMessage, FallbackValue={x:Static sys:String.Empty}}" />
+                <ScrollViewer Grid.Row="1"
+                              BorderThickness="1" BorderBrush="DarkGray"
+                              Margin="5">
 
-                                    <dxe:ComboBoxEdit.Buttons>
-                                        <dxe:ButtonInfo
-                                            Command="{Binding DataContext.RemoveUploadItemCommand, RelativeSource={RelativeSource AncestorType={x:Type RibbonWindow}}}"
-                                            CommandParameter="{Binding}"
-                                            ToolTip="Entfernen"
-                                            GlyphKind="Minus" />
-                                    </dxe:ComboBoxEdit.Buttons>
-                                </dxe:ComboBoxEdit>
-                                <dxe:BrowsePathEdit Margin="0 0 0 5"
-                                                    AlwaysShowLabelAtTop="True" Label="SQL Datei"
-                                                    DialogType="FileOpen"
-                                                    DialogFilter="{Binding DataContext.SqlFilterString, RelativeSource={RelativeSource AncestorType={x:Type RibbonWindow}}}"
-                                                    Text="{Binding FilePath, UpdateSourceTrigger=PropertyChanged, FallbackValue={x:Static sys:String.Empty}}"
-                                                    ValidateOnTextInput="True"
-                                                    ValidateOnEnterKeyPressed="True"
-                                                    CausesValidation="True"
-                                                    ToolTip="{Binding FilePath}" />
-                                <Border BorderBrush="Red" BorderThickness="1"
-                                        Background="Tomato" CornerRadius="5"
-                                        Margin="0 0 0 5" Padding="3"
-                                        Visibility="{Binding HasErrors, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                    <TextBlock Text="{Binding GeneralError}"
-                                               Foreground="White" />
-                                </Border>
-                                <Separator Margin="0 3 0 0" />
-                            </StackPanel>
-                        </DataTemplate>
+                    <ItemsControl ItemsSource="{Binding UploadItems}">
+                        <ItemsControl.ItemTemplate>
 
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
+                            <DataTemplate DataType="{x:Type viewModels:UploadItem}">
+                                <StackPanel Orientation="Vertical"
+                                            Margin="5">
+                                    <dxe:ComboBoxEdit
+                                        ItemsSource="{Binding DataContext.Releases, RelativeSource={RelativeSource AncestorType={x:Type RibbonWindow}}}"
+                                        SelectedItem="{Binding Release, UpdateSourceTrigger=PropertyChanged}"
+                                        DisplayMember="Name"
+                                        CausesValidation="True"
+                                        AlwaysShowLabelAtTop="True" Label="Release"
+                                        Margin="0 0 0 5">
+
+                                        <dxe:ComboBoxEdit.Buttons>
+                                            <dxe:ButtonInfo
+                                                Command="{Binding DataContext.RemoveUploadItemCommand, RelativeSource={RelativeSource AncestorType={x:Type RibbonWindow}}}"
+                                                CommandParameter="{Binding}"
+                                                ToolTip="Entfernen"
+                                                GlyphKind="Minus" />
+                                        </dxe:ComboBoxEdit.Buttons>
+                                    </dxe:ComboBoxEdit>
+                                    <dxe:BrowsePathEdit Margin="0 0 0 5"
+                                                        AlwaysShowLabelAtTop="True" Label="SQL Datei"
+                                                        DialogType="FileOpen"
+                                                        DialogFilter="{Binding DataContext.SqlFilterString, RelativeSource={RelativeSource AncestorType={x:Type RibbonWindow}}}"
+                                                        Text="{Binding FilePath, UpdateSourceTrigger=PropertyChanged, FallbackValue={x:Static sys:String.Empty}}"
+                                                        ValidateOnTextInput="True"
+                                                        ValidateOnEnterKeyPressed="True"
+                                                        CausesValidation="True"
+                                                        ToolTip="{Binding FilePath}" />
+                                    <Border BorderBrush="Red" BorderThickness="1"
+                                            Background="Tomato" CornerRadius="5"
+                                            Margin="0 0 0 5" Padding="3"
+                                            Visibility="{Binding HasErrors, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <TextBlock Text="{Binding GeneralError}"
+                                                   Foreground="White" />
+                                    </Border>
+                                    <Separator Margin="0 3 0 0" />
+                                </StackPanel>
+                            </DataTemplate>
+
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
 
         </Grid>
     </DockPanel>
